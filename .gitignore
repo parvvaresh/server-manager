@@ -1,0 +1,5 @@
+bin/
+*.tsv
+*.enc
+dist/
+.DS_Store
