@@ -1,0 +1,31 @@
+{
+  "name": "@parvvaresh/sshm",
+  "version": "0.2.0",
+  "description": "A terminal manager for SSH and SFTP servers",
+  "keywords": ["ssh", "sftp", "tmux", "cli", "tui", "server-manager"],
+  "homepage": "https://github.com/parvvaresh/server-manager#readme",
+  "bugs": "https://github.com/parvvaresh/server-manager/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/parvvaresh/server-manager.git"
+  },
+  "bin": {
+    "sshm": "bin/sshm.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "optionalDependencies": {
+    "@parvvaresh/sshm-darwin-arm64": "0.2.0",
+    "@parvvaresh/sshm-darwin-x64": "0.2.0",
+    "@parvvaresh/sshm-linux-arm64": "0.2.0",
+    "@parvvaresh/sshm-linux-x64": "0.2.0"
+  }
+}

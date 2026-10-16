@@ -19,7 +19,8 @@ import (
 	"syscall"
 )
 
-const version = "0.2.0"
+// version is overridden at release time with -ldflags "-X main.version=...".
+var version = "0.2.0"
 
 func main() {
 	initColors()

@@ -62,17 +62,87 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: "0"
-        run: go build -trimpath -ldflags "-s -w" -o dist/sshm-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/sshm
+        run: |
+          ldflags="-s -w"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            ldflags="$ldflags -X main.version=${GITHUB_REF_NAME#v}"
+          fi
+          go build -trimpath -ldflags "$ldflags" -o dist/sshm-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/sshm
 
       - uses: actions/upload-artifact@v4
         with:
           name: sshm-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/
 
+  npm:
+    name: npm packages
+    runs-on: ubuntu-latest
+    needs: cross
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Pick version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else
+            base=$(sed -n 's/^var version = "\(.*\)"/\1/p' cmd/sshm/main.go)
+            echo "VERSION=$base-ci.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Stage packages
+        run: node scripts/npm-stage.mjs "$VERSION" dist dist/npm
+
+      - name: Smoke test the packages
+        run: |
+          mkdir -p "$RUNNER_TEMP/pkgs" "$RUNNER_TEMP/app"
+          for d in dist/npm/*; do
+            (cd "$d" && npm pack --pack-destination "$RUNNER_TEMP/pkgs")
+          done
+          cd "$RUNNER_TEMP/app"
+          npm init -y > /dev/null
+          npm install --omit=optional --no-audit --no-fund \
+            "$RUNNER_TEMP/pkgs/parvvaresh-sshm-linux-x64-$VERSION.tgz" \
+            "$RUNNER_TEMP/pkgs/parvvaresh-sshm-$VERSION.tgz"
+          npx sshm version
+
+      - name: Publish to npm
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Prereleases such as v1.2.0-rc.1 go to the "next" dist-tag, so
+          # `npm install` keeps getting the last stable release.
+          tag=latest
+          [[ "$VERSION" == *-* ]] && tag=next
+
+          # Platform packages first: the main package depends on them.
+          for d in dist/npm/sshm-* dist/npm/sshm; do
+            name=$(node -p "require('./$d/package.json').name")
+            if npm view "$name@$VERSION" version > /dev/null 2>&1; then
+              echo "$name@$VERSION is already published, skipping"
+              continue
+            fi
+            (cd "$d" && npm publish --access public --provenance --tag "$tag")
+          done
+
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: cross
+    needs: [cross, npm]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
