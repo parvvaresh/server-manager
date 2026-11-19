@@ -28,6 +28,7 @@ func rundir() (string, error) {
 }
 
 func cleanupRunDir() {
+	stopMasters()
 	if runDir != "" {
 		os.RemoveAll(runDir)
 		runDir = ""

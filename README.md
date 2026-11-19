@@ -38,6 +38,9 @@ of you whenever you type `sshm`.
 - **Encrypted vault.** Lock the vault with a master password using AES-256.
   The file is compatible with `openssl enc -aes-256-cbc -pbkdf2`, so you are
   never locked in.
+- **A dashboard in the browser.** `sshm web` adds a sidebar of your servers,
+  live CPU, memory, disk and network for the one you pick, a file manager with
+  drag and drop uploads, and a console for one-off commands.
 - **Scriptable.** Everything the UI does is also a subcommand.
 - **A single static binary.** Written in Go with no dependencies. npm is only
   the delivery route.
@@ -53,6 +56,14 @@ production databases and nothing else.
 in a tiled tmux window.
 
 <img src="docs/screenshots/multi.svg" alt="Three servers marked with a dot, ready to open side by side" width="820">
+
+**A dashboard in the browser.** Run `sshm web`, pick a server in the sidebar,
+and watch its CPU, memory, network and disks live.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-overview-dark.png">
+  <img src="docs/screenshots/dashboard-overview.png" alt="The sshm web dashboard: a sidebar of servers and live CPU, memory, network, load, disk and process panels for web-1" width="820">
+</picture>
 
 **Use it from scripts** as well as from the UI.
 
@@ -169,6 +180,7 @@ password empty to use your SSH agent or default keys.
 | `sshm sftp NAME` | Connect with `sftp` |
 | `sshm multi NAME NAME ...` | Open all of them in a tiled tmux window |
 | `sshm copy-id NAME [KEYFILE]` | Install your public key on the server |
+| `sshm web [--port N] [--no-open]` | Open the browser dashboard (see below) |
 | `sshm lock` | Encrypt the vault with a master password |
 | `sshm unlock` | Decrypt the vault back to plain text |
 | `sshm export [--with-passwords]` | Write the vault as TSV to standard output |
@@ -204,6 +216,52 @@ Keep the vault encrypted when you are not editing it:
 ```
 sshm lock
 ```
+
+## Web dashboard
+
+```
+sshm web
+```
+
+This opens a local dashboard in your browser. The sidebar lists every server
+in the vault, with a dot showing whether its SSH port answers. Pick one to get
+three tabs:
+
+- **Overview** shows live CPU, memory and swap, network throughput, load
+  average, disk usage per mount, uptime, OS details and the busiest
+  processes. It refreshes every few seconds and charts the recent history.
+- **Files** is a file manager. You can browse folders, upload by dragging
+  files in or with the Upload button, download files (folders arrive as
+  `.tar.gz`), and create, rename, delete or edit small text files in place.
+- **Console** runs one-off commands and shows their output. A `cd` carries
+  over to the next command.
+
+**Files.** Browse, upload by dragging files in, download, rename and delete.
+
+<img src="docs/screenshots/dashboard-files.png" alt="The Files tab listing /srv/app on web-1, with an upload in progress" width="820">
+
+**Edit in place.** Double-click a text file to open it, then save with
+<kbd>⌘</kbd>+<kbd>S</kbd> or <kbd>Ctrl</kbd>+<kbd>S</kbd>.
+
+<img src="docs/screenshots/dashboard-editor.png" alt="docker-compose.yml open in the built-in editor" width="820">
+
+**Console.** Run a command and read the output without opening a terminal.
+
+<img src="docs/screenshots/dashboard-console.png" alt="The Console tab showing the output of df -h and docker ps" width="820">
+
+Everything goes through your system `ssh`, using the same keys, agent, stored
+passwords and `~/.ssh/config` as `sshm ssh`. Each server keeps one multiplexed
+connection open while the dashboard runs, so polling stays cheap. That
+connection is closed when you stop the dashboard with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
+
+Server statistics are read from `/proc`, so they need a Linux server. Files
+and the console work on any server with a POSIX shell.
+
+The dashboard listens on `127.0.0.1` only. It is protected by a random token
+in the link it prints (and opens), and it rejects requests that come from
+other websites. Unknown host keys are accepted on first use and changed keys
+are refused. To require known keys, set
+`SSHM_SSH_OPTS="-o StrictHostKeyChecking=yes"`.
 
 ## Configuration
 

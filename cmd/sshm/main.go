@@ -4,6 +4,7 @@
 //   - search them as you type
 //   - open ssh or sftp on the selected one
 //   - mark several and open them all in a tiled tmux window
+//   - a browser dashboard: live CPU / memory / disk, a file manager, a console
 //
 // The vault format is the same tab separated file the shell version used, and
 // `sshm lock` writes exactly what `openssl enc -aes-256-cbc -pbkdf2` writes,
@@ -91,6 +92,9 @@ func main() {
 	case "import":
 		load(st)
 		cmdImport(st, args)
+	case "web", "gui", "dashboard":
+		load(st)
+		cmdWeb(st, args)
 	case "where", "path":
 		if st.Encrypted() {
 			info("%s (encrypted)", st.Enc)
@@ -332,6 +336,7 @@ func usage() {
   %ssshm sftp%s NAME            connect with sftp
   %ssshm multi%s NAME NAME ...  open them all in a tiled tmux window
   %ssshm copy-id%s NAME [KEY]   install your public key on a server
+  %ssshm web%s [--port N]       dashboard in the browser: stats, files, console
   %ssshm lock%s / %sunlock%s       encrypt / decrypt the vault (AES-256, PBKDF2)
   %ssshm export%s [--with-passwords] > backup.tsv
   %ssshm import%s FILE.tsv
@@ -344,5 +349,6 @@ Env: SSHM_HOME (vault dir), SSHM_SSH_OPTS (extra ssh flags)
 		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset,
 		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset,
 		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset,
-		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset)
+		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset,
+		cBold, cReset)
 }
