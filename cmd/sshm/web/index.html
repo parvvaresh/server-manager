@@ -1,0 +1,1309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sshm dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6fde'/%3E%3Cpath d='M16 7l9 9-9 9-9-9z' fill='white'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f4f6f9;
+  --panel: #ffffff;
+  --side: #fbfcfd;
+  --border: #e3e7ee;
+  --border-strong: #d0d6e0;
+  --text: #1b2230;
+  --muted: #5d6879;
+  --faint: #95a0b1;
+  --accent: #2f6fde;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(47, 111, 222, .10);
+  --hover: #f0f3f7;
+  --sel: #e7eefc;
+  --ok: #17a34a;
+  --warn: #d48806;
+  --crit: #dc2f2f;
+  --rx: #2f6fde;
+  --tx: #c2410c;
+  --track: #e9edf3;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, .18);
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1117; --panel: #151a22; --side: #11151c; --border: #232a36; --border-strong: #2f3846;
+    --text: #e5e9f0; --muted: #9aa5b5; --faint: #677385; --accent: #5b9bff; --accent-ink: #0b1220;
+    --accent-soft: rgba(91, 155, 255, .14); --hover: #1b212b; --sel: #1d2a40;
+    --ok: #3fbf6f; --warn: #e8a63a; --crit: #ef5a5a; --rx: #5b9bff; --tx: #f08a4b; --track: #222a36;
+    --shadow: 0 1px 2px rgba(0,0,0,.3); --shadow-lg: 0 16px 40px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1117; --panel: #151a22; --side: #11151c; --border: #232a36; --border-strong: #2f3846;
+  --text: #e5e9f0; --muted: #9aa5b5; --faint: #677385; --accent: #5b9bff; --accent-ink: #0b1220;
+  --accent-soft: rgba(91, 155, 255, .14); --hover: #1b212b; --sel: #1d2a40;
+  --ok: #3fbf6f; --warn: #e8a63a; --crit: #ef5a5a; --rx: #5b9bff; --tx: #f08a4b; --track: #222a36;
+  --shadow: 0 1px 2px rgba(0,0,0,.3); --shadow-lg: 0 16px 40px rgba(0,0,0,.5);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--text); font: 14px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.mono { font-family: var(--mono); }
+.muted { color: var(--muted); }
+.faint { color: var(--faint); }
+
+/* ---------------------------------------------------------------- shell -- */
+.app { display: grid; grid-template-columns: 284px 1fr; height: 100vh; }
+.side {
+  background: var(--side); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 16px 16px 12px; }
+.logo { width: 28px; height: 28px; border-radius: 8px; background: var(--accent);
+  display: grid; place-items: center; color: #fff; }
+.logo svg { width: 14px; height: 14px; }
+.brand b { font-size: 15px; letter-spacing: .2px; }
+.brand .ver { color: var(--faint); font-size: 12px; margin-left: auto; }
+.search { margin: 0 12px 10px; position: relative; }
+.search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+.search input {
+  width: 100%; padding: 8px 34px 8px 32px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--panel); outline: none;
+}
+.search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.search kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+kbd { font: 11px var(--mono); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border);
+  color: var(--faint); background: var(--panel); }
+.srvlist { flex: 1; overflow-y: auto; padding: 2px 8px 12px; }
+.group { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--faint);
+  padding: 10px 8px 6px; }
+.srv {
+  display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 10px;
+  width: 100%; text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 8px;
+}
+.srv:hover { background: var(--hover); }
+.srv.on { background: var(--sel); }
+.srv .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.srv .lb { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.srv .ms { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); opacity: .5; }
+.dot.up { background: var(--ok); opacity: 1; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent); }
+.dot.down { background: var(--crit); opacity: 1; }
+.tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+.tag { font-size: 10.5px; padding: 0 6px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); line-height: 17px; }
+.side-foot { border-top: 1px solid var(--border); padding: 10px 12px; display: flex; align-items: center;
+  gap: 8px; font-size: 12px; color: var(--faint); }
+.side-foot .grow { flex: 1; }
+
+.main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.top {
+  display: flex; align-items: center; gap: 14px; padding: 14px 24px 0; background: var(--panel);
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.top .title { display: flex; align-items: center; gap: 12px; min-width: 0; padding-bottom: 12px; }
+.top h1 { font-size: 18px; margin: 0; white-space: nowrap; }
+.top .sub { color: var(--muted); font-size: 13px; }
+.chips { display: flex; gap: 8px; margin-left: auto; padding-bottom: 12px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px;
+  border: 1px solid var(--border); border-radius: 99px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip b { color: var(--text); font-weight: 600; }
+.live { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: pulse 2s infinite; }
+.live.stale { background: var(--faint); animation: none; }
+.live.err { background: var(--crit); animation: none; }
+@keyframes pulse { 50% { opacity: .35; } }
+.tabs { display: flex; gap: 4px; width: 100%; }
+.tab { border: 0; background: none; padding: 9px 12px 11px; color: var(--muted); display: flex; align-items: center;
+  gap: 7px; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+.tab:hover { color: var(--text); }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.pane { flex: 1; overflow: auto; padding: 22px 24px 40px; min-height: 0; }
+.btn.menu-btn { display: none; }
+
+/* -------------------------------------------------------------- buttons -- */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 7px;
+  border: 1px solid var(--border-strong); background: var(--panel); font-size: 13px; white-space: nowrap; }
+.btn:hover { background: var(--hover); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn.danger { color: var(--crit); }
+.btn.danger.solid { background: var(--crit); border-color: var(--crit); color: #fff; }
+.btn.ghost { border-color: transparent; background: none; }
+.btn.ghost:hover { background: var(--hover); }
+.btn.icon { padding: 6px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* ------------------------------------------------------------- overview -- */
+.grid { display: grid; gap: 16px; }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.g3 { grid-template-columns: 2fr 1fr; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+  box-shadow: var(--shadow); min-width: 0; }
+.card h3 { margin: 0 0 12px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; display: flex; align-items: center; gap: 8px; }
+.card h3 .r { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--faint); }
+.metric { display: flex; align-items: center; gap: 16px; }
+.big { font-size: 28px; font-weight: 650; letter-spacing: -.5px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.big small { font-size: 15px; color: var(--muted); font-weight: 500; margin-left: 2px; }
+.kv { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.kv b { color: var(--text); font-weight: 600; }
+.ring { width: 72px; height: 72px; flex: none; }
+.ring .bg { stroke: var(--track); }
+.ring text { font: 600 15px var(--sans); fill: var(--text); }
+.spark { width: 100%; height: 44px; display: block; margin-top: 12px; }
+.spark path { vector-effect: non-scaling-stroke; }
+.bar { height: 8px; border-radius: 99px; background: var(--track); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 99px; background: var(--ok); transition: width .5s; }
+.lvl-warn { --c: var(--warn); }
+.lvl-crit { --c: var(--crit); }
+.lvl-ok { --c: var(--ok); }
+.bar > i { background: var(--c, var(--ok)); }
+.disk { display: grid; grid-template-columns: minmax(80px, 160px) 1fr auto; gap: 14px; align-items: center;
+  padding: 8px 0; border-top: 1px solid var(--border); }
+.disk:first-of-type { border-top: 0; padding-top: 0; }
+.disk .mnt { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.disk .fs { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.disk .num { font-size: 12.5px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sys { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; font-size: 13px; }
+.sys dt { color: var(--muted); }
+.sys dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.loads { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.loads .big { font-size: 22px; }
+.loads .lbl { font-size: 11px; color: var(--faint); margin-bottom: 6px; }
+.loads .bar { margin-top: 8px; height: 5px; }
+.net-row { display: flex; gap: 18px; }
+.net-row .big { font-size: 20px; }
+.net-row .lbl { font-size: 11px; color: var(--faint); display: flex; align-items: center; gap: 5px; }
+.sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--faint); text-transform: uppercase;
+  letter-spacing: .4px; padding: 0 10px 8px; white-space: nowrap; }
+td { padding: 7px 10px; border-top: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+td.num, th.num { text-align: right; }
+.procs td:last-child { font-family: var(--mono); font-size: 12.5px; }
+.state { display: grid; place-items: center; text-align: center; padding: 60px 20px; color: var(--muted); }
+.state h2 { margin: 12px 0 6px; color: var(--text); font-size: 17px; }
+.state .big-ico { width: 46px; height: 46px; border-radius: 12px; background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center; }
+.state .big-ico svg { width: 22px; height: 22px; }
+.errbox { border: 1px solid color-mix(in srgb, var(--crit) 35%, var(--border)); background: color-mix(in srgb, var(--crit) 7%, var(--panel));
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-start; }
+.errbox pre { margin: 6px 0 0; white-space: pre-wrap; font: 12.5px var(--mono); color: var(--muted); }
+.errbox svg { color: var(--crit); margin-top: 2px; }
+.skel { background: linear-gradient(90deg, var(--track) 0%, var(--hover) 50%, var(--track) 100%);
+  background-size: 200% 100%; animation: sk 1.3s infinite; border-radius: 6px; }
+@keyframes sk { to { background-position: -200% 0; } }
+
+/* ---------------------------------------------------------------- files -- */
+.files { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+.toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.crumbs { display: flex; align-items: center; flex: 1; min-width: 200px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 8px; padding: 3px 4px; overflow-x: auto; white-space: nowrap; }
+.crumbs button { border: 0; background: none; padding: 3px 6px; border-radius: 5px; font-family: var(--mono); font-size: 12.5px; }
+.crumbs button:hover { background: var(--hover); }
+.crumbs .sep { color: var(--faint); font-size: 12px; }
+.crumbs input { flex: 1; border: 0; outline: none; background: none; font: 12.5px var(--mono); padding: 3px 6px; }
+.crumbs .fill { flex: 1; align-self: stretch; cursor: text; min-width: 20px; }
+.filter { width: 170px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); outline: none; }
+.filter:focus { border-color: var(--accent); }
+.ftable-wrap { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: auto;
+  position: relative; min-height: 240px; box-shadow: var(--shadow); }
+.ftable th { position: sticky; top: 0; background: var(--panel); padding-top: 12px; z-index: 1; cursor: pointer; user-select: none; }
+.ftable th.nosort { cursor: default; }
+.ftable th .arr { color: var(--accent); }
+.ftable td { padding: 6px 10px; }
+.ftable tr.row { cursor: default; }
+.ftable tr.row:hover td { background: var(--hover); }
+.ftable tr.row.on td { background: var(--sel); }
+.fname { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.fname span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fname .lnk { color: var(--faint); font-size: 11px; }
+.ico-dir { color: var(--accent); }
+.ico-file { color: var(--faint); }
+.ico-link { color: var(--warn); }
+.acts { display: flex; gap: 2px; justify-content: flex-end; opacity: 0; }
+tr.row:hover .acts, tr.row.on .acts { opacity: 1; }
+.acts .btn { padding: 4px; }
+.perm { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.drop { position: absolute; inset: 0; border: 2px dashed var(--accent); border-radius: 12px; background: color-mix(in srgb, var(--accent) 8%, transparent);
+  display: none; place-items: center; z-index: 3; color: var(--accent); font-weight: 600; pointer-events: none; }
+.drop.on { display: grid; }
+.fstatus { font-size: 12px; color: var(--faint); display: flex; gap: 12px; }
+
+/* -------------------------------------------------------------- console -- */
+.console { display: flex; flex-direction: column; height: 100%; gap: 12px; }
+.term { flex: 1; background: #0b0e13; color: #d6dde8; border-radius: 12px; padding: 14px 16px; overflow: auto;
+  font: 12.5px/1.55 var(--mono); min-height: 240px; border: 1px solid var(--border); }
+.term .cmd { color: #8ab4ff; margin-top: 12px; }
+.term .cmd:first-child { margin-top: 0; }
+.term .cmd .p { color: #5fd38d; }
+.term pre { margin: 2px 0 0; white-space: pre-wrap; word-break: break-word; font: inherit; }
+.term .meta { color: #66707e; font-size: 11.5px; }
+.term .meta.bad { color: #ef7b7b; }
+.term .hint { color: #66707e; }
+.prompt { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px 4px 4px 12px; }
+.prompt:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.prompt .ps { font: 12.5px var(--mono); color: var(--ok); white-space: nowrap; max-width: 40%; overflow: hidden; text-overflow: ellipsis; }
+.prompt input { flex: 1; border: 0; outline: none; background: none; font: 13px var(--mono); padding: 6px 0; min-width: 0; }
+.quick { display: flex; gap: 6px; flex-wrap: wrap; }
+.quick button { font: 12px var(--mono); padding: 3px 9px; border-radius: 99px; border: 1px solid var(--border); background: var(--panel); color: var(--muted); }
+.quick button:hover { color: var(--text); border-color: var(--border-strong); }
+
+/* ------------------------------------------------------- modal / toasts -- */
+.veil { position: fixed; inset: 0; background: rgba(10, 14, 20, .45); display: grid; place-items: center; z-index: 50; padding: 16px; }
+.modal { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg);
+  width: min(440px, 100%); padding: 20px; }
+.modal h2 { margin: 0 0 6px; font-size: 16px; }
+.modal p { margin: 0 0 14px; color: var(--muted); overflow-wrap: anywhere; }
+.modal input[type=text] { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-strong);
+  background: var(--bg); outline: none; font-family: var(--mono); font-size: 13px; }
+.modal input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.modal .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.editor { width: min(1100px, 100%); height: min(86vh, 900px); display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.editor header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.editor header .p { font: 13px var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.editor textarea { flex: 1; border: 0; outline: none; resize: none; padding: 14px 16px; font: 13px/1.55 var(--mono);
+  background: var(--bg); tab-size: 4; white-space: pre; }
+.editor footer { padding: 8px 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--faint); display: flex; gap: 16px; }
+.dirty { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); display: none; }
+.dirty.on { display: inline-block; }
+.toasts { position: fixed; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 8px; z-index: 60; width: min(360px, calc(100vw - 32px)); }
+.toast { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px;
+  padding: 10px 12px; box-shadow: var(--shadow-lg); font-size: 13px; animation: tin .2s ease-out; overflow-wrap: anywhere; }
+.toast.err { border-left-color: var(--crit); }
+.toast.ok { border-left-color: var(--ok); }
+.toast .t-name { display: flex; justify-content: space-between; gap: 10px; }
+.toast .t-name span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast .bar { margin-top: 7px; height: 5px; }
+@keyframes tin { from { transform: translateY(8px); opacity: 0; } }
+
+/* ----------------------------------------------------------- responsive -- */
+@media (max-width: 1100px) {
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: fixed; inset: 0 auto 0 0; width: min(300px, 86vw); z-index: 40; transform: translateX(-100%);
+    transition: transform .2s; box-shadow: var(--shadow-lg); }
+  .side.open { transform: none; }
+  .btn.menu-btn { display: inline-flex; }
+  .top { padding: 12px 16px 0; }
+  .pane { padding: 16px 16px 32px; }
+  .g4 { grid-template-columns: 1fr; }
+  .chips { margin-left: 0; }
+  .col-perm, .col-mtime { display: none; }
+  .disk { grid-template-columns: 1fr auto; gap: 6px 12px; }
+  .disk .bar { grid-column: 1 / -1; grid-row: 2; }
+  .acts { opacity: 1; }
+  .filter { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9z" fill="currentColor"/></svg></div>
+      <b>sshm</b><span class="ver" id="ver"></span>
+    </div>
+    <div class="search">
+      <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" placeholder="Search servers" autocomplete="off" spellcheck="false">
+      <kbd>/</kbd>
+    </div>
+    <div class="srvlist" id="list"></div>
+    <div class="side-foot">
+      <span id="count" class="grow"></span>
+      <button class="btn ghost icon" id="repingBtn" title="Check which servers are reachable"></button>
+      <button class="btn ghost icon" id="themeBtn" title="Toggle theme"></button>
+    </div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+'use strict';
+
+// ------------------------------------------------------------------ icons --
+const ICONS = {
+  server: '<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
+  download: '<path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',
+  up: '<path d="M12 19V5M5 12l7-7 7 7"/>',
+  folderPlus: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13h6"/>',
+  filePlus: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  rename: '<path d="M4 7V5h16v2M9 19h6M12 5v14"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  terminal: '<path d="M4 6l6 6-6 6"/><path d="M12 18h8"/>',
+  activity: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff: '<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  cpu: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  mem: '<rect x="3" y="7" width="18" height="10" rx="1.5"/><path d="M7 11v2M11 11v2M15 11v2M6 17v3M18 17v3"/>',
+  disk: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  net: '<path d="M7 17V5M3 9l4-4 4 4"/><path d="M17 7v12M13 15l4 4 4-4"/>',
+  gauge: '<path d="M12 14l4-4"/><path d="M3.3 17a10 10 0 1 1 17.4 0"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  alert: '<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5h.01"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  play: '<path d="M7 5l12 7-12 7z"/>',
+  wifi: '<path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01"/>',
+};
+const icon = (name, cls = '') => {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('viewBox', '0 0 24 24');
+  s.setAttribute('class', ('i ' + cls).trim());
+  s.innerHTML = ICONS[name] || '';
+  return s;
+};
+
+// -------------------------------------------------------------- DOM helper --
+// Every piece of text from a server goes through textContent, never innerHTML.
+function el(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (k in n && typeof v !== 'string') n[k] = v;
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(9)) {
+    if (c == null || c === false) continue;
+    n.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return n;
+}
+const $ = (id) => document.getElementById(id);
+
+// ------------------------------------------------------------------ format --
+function fmtBytes(n, digits = 1) {
+  if (n == null || isNaN(n)) return '–';
+  const u = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  let i = 0;
+  while (Math.abs(n) >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return (i === 0 ? n.toFixed(0) : n.toFixed(n >= 100 ? 0 : digits)) + ' ' + u[i];
+}
+const fmtRate = (n) => fmtBytes(n) + '/s';
+const pct = (a, b) => (b > 0 ? (100 * a) / b : 0);
+function fmtUptime(s) {
+  if (!s) return '–';
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+  if (d) return `${d}d ${h}h`;
+  if (h) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+function fmtTime(t) {
+  if (!t) return '–';
+  const d = new Date(t * 1000);
+  const old = Date.now() - d.getTime() > 180 * 864e5;
+  return d.toLocaleString(undefined, old
+    ? { year: 'numeric', month: 'short', day: 'numeric' }
+    : { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+function fmtPerm(mode, type) {
+  const m = parseInt(mode, 8);
+  if (isNaN(m)) return mode || '';
+  let s = type === 'dir' ? 'd' : type === 'link' ? 'l' : '-';
+  for (const sh of [6, 3, 0]) {
+    const v = (m >> sh) & 7;
+    s += (v & 4 ? 'r' : '-') + (v & 2 ? 'w' : '-') + (v & 1 ? 'x' : '-');
+  }
+  return s;
+}
+const level = (p) => (p >= 90 ? 'crit' : p >= 75 ? 'warn' : 'ok');
+const joinPath = (dir, name) => (dir.endsWith('/') ? dir : dir + '/') + name;
+const parentOf = (p) => { const i = p.replace(/\/+$/, '').lastIndexOf('/'); return i <= 0 ? '/' : p.slice(0, i); };
+const baseOf = (p) => p.replace(/\/+$/, '').split('/').pop() || '/';
+
+// ------------------------------------------------------------------- store --
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('sshm.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('sshm.' + k, JSON.stringify(v)); } catch {} },
+};
+
+const S = {
+  servers: [],
+  ping: {},             // name -> {up, ms, error}
+  sel: null,
+  tab: store.get('tab', 'overview'),
+  stats: {},            // name -> {data, err, at}
+  hist: {},             // name -> {cpu:[], mem:[], rx:[], tx:[]}
+  cwd: {},              // name -> path
+  files: null,          // {server, path, entries}
+  fileSel: null,        // name of the highlighted entry
+  fileFilter: '',
+  fileSort: store.get('fileSort', { key: 'name', dir: 1 }),
+  showHidden: store.get('hidden', true),
+  filesLoading: false,
+  filesErr: null,
+  term: {},             // name -> [{cmd, out, code, ms, cwd}]
+  termHist: store.get('termHist', []),
+  editingPath: false,
+};
+
+// --------------------------------------------------------------------- api --
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  let j = {};
+  try { j = await r.json(); } catch {}
+  if (!r.ok) {
+    const e = new Error(j.error || `${r.status} ${r.statusText}`);
+    e.status = r.status;
+    throw e;
+  }
+  return j;
+}
+const qs = (o) => new URLSearchParams(o).toString();
+const post = (path, data) => api(path, {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+});
+
+// ----------------------------------------------------------------- toasts --
+function toast(msg, kind = '', ms = 4500) {
+  const t = el('div', { class: 'toast ' + kind, text: msg });
+  $('toasts').append(t);
+  if (ms) setTimeout(() => t.remove(), ms);
+  return t;
+}
+
+// ----------------------------------------------------------------- dialogs --
+// modal shows a dialog and resolves with what it closes with. onEscape
+// replaces the default "close on Esc / click outside", e.g. to guard edits.
+function modal(build, onEscape) {
+  return new Promise((resolve) => {
+    const veil = el('div', { class: 'veil' });
+    const close = (v) => { veil.remove(); document.removeEventListener('keydown', onKey, true); resolve(v); };
+    const topmost = () => { const all = document.querySelectorAll('.veil'); return all[all.length - 1] === veil; };
+    const dismiss = () => (onEscape ? onEscape() : close(null));
+    const onKey = (e) => {
+      if (e.key !== 'Escape' || !topmost()) return;
+      e.preventDefault(); e.stopPropagation(); dismiss();
+    };
+    veil.addEventListener('mousedown', (e) => { if (e.target === veil) dismiss(); });
+    document.addEventListener('keydown', onKey, true);
+    veil.append(build(close));
+    document.body.append(veil);
+    const f = veil.querySelector('[autofocus]');
+    if (f) { f.focus(); if (f.tagName === 'INPUT') f.select(); }
+  });
+}
+function askText(title, label, value = '', okText = 'OK') {
+  return modal((close) => {
+    const inp = el('input', { type: 'text', value, autofocus: true, spellcheck: 'false' });
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') close(inp.value.trim() || null); });
+    return el('div', { class: 'modal' },
+      el('h2', { text: title }),
+      label ? el('p', { text: label }) : null,
+      inp,
+      el('div', { class: 'row' },
+        el('button', { class: 'btn', text: 'Cancel', onclick: () => close(null) }),
+        el('button', { class: 'btn primary', text: okText, onclick: () => close(inp.value.trim() || null) })));
+  });
+}
+function confirmBox(title, msg, okText = 'Delete') {
+  return modal((close) => el('div', { class: 'modal' },
+    el('h2', { text: title }),
+    el('p', { text: msg }),
+    el('div', { class: 'row' },
+      el('button', { class: 'btn', text: 'Cancel', onclick: () => close(false) }),
+      el('button', { class: 'btn danger solid', text: okText, autofocus: true, onclick: () => close(true) }))));
+}
+
+// ----------------------------------------------------------------- theme ---
+function applyTheme(t) {
+  if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  $('themeBtn').replaceChildren(icon(dark ? 'sun' : 'moon'));
+}
+$('themeBtn').onclick = () => {
+  const cur = document.documentElement.dataset.theme ||
+    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  store.set('theme', next);
+  applyTheme(next);
+};
+applyTheme(store.get('theme', null));
+$('repingBtn').replaceChildren(icon('wifi'));
+$('repingBtn').onclick = () => pingAll(true);
+
+// ---------------------------------------------------------------- sidebar --
+function matches(s, terms) {
+  const hay = [s.name, s.label, s.tags.join(' '), s.note].join(' ').toLowerCase();
+  return terms.every((t) => hay.includes(t));
+}
+function visibleServers() {
+  const terms = $('q').value.toLowerCase().split(/\s+/).filter(Boolean);
+  return S.servers.filter((s) => matches(s, terms));
+}
+function renderSidebar() {
+  const list = visibleServers();
+  $('count').textContent = `${list.length} of ${S.servers.length} servers`;
+  if (!S.servers.length) {
+    $('list').replaceChildren(el('div', { class: 'state', style: 'padding:30px 10px' },
+      el('div', { text: 'No servers yet.' }),
+      el('div', { class: 'faint', text: 'Add one with `sshm add` in your terminal.' })));
+    return;
+  }
+  if (!list.length) {
+    $('list').replaceChildren(el('div', { class: 'faint', style: 'padding:20px 10px', text: 'Nothing matches.' }));
+    return;
+  }
+  $('list').replaceChildren(...list.map((s) => {
+    const p = S.ping[s.name];
+    const st = p ? (p.up ? 'up' : 'down') : '';
+    return el('button', {
+      class: 'srv' + (s.name === S.sel ? ' on' : ''), 'data-name': s.name,
+      title: p ? (p.up ? `reachable · ${p.ms} ms` : `unreachable: ${p.error}`) : 'checking…',
+      onclick: () => select(s.name),
+    },
+    el('span', { class: 'dot ' + st }),
+    el('span', { style: 'min-width:0' },
+      el('div', { class: 'nm', text: s.name }),
+      el('div', { class: 'lb', text: s.label }),
+      s.tags.length ? el('div', { class: 'tags' }, s.tags.slice(0, 4).map((t) => el('span', { class: 'tag', text: t }))) : null),
+    el('span', { class: 'ms', text: p && p.up ? p.ms + ' ms' : '' }));
+  }));
+}
+$('q').addEventListener('input', renderSidebar);
+$('q').addEventListener('keydown', (e) => {
+  const list = visibleServers();
+  if (!list.length) return;
+  let i = list.findIndex((s) => s.name === S.sel);
+  if (e.key === 'ArrowDown') { e.preventDefault(); select(list[Math.min(i + 1, list.length - 1)].name); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); select(list[Math.max(i - 1, 0)].name); }
+  else if (e.key === 'Enter') { e.preventDefault(); select(list[i < 0 ? 0 : i].name); $('q').blur(); }
+  else if (e.key === 'Escape') { $('q').value = ''; renderSidebar(); $('q').blur(); }
+});
+
+async function loadServers() {
+  try {
+    const j = await api('/api/servers');
+    S.servers = j.servers;
+    $('ver').textContent = 'v' + j.version;
+  } catch (e) {
+    toast('Could not load servers: ' + e.message, 'err', 0);
+  }
+  renderSidebar();
+}
+
+let pingTimer;
+async function pingAll(manual) {
+  clearTimeout(pingTimer);
+  const queue = S.servers.map((s) => s.name);
+  const worker = async () => {
+    while (queue.length) {
+      const name = queue.shift();
+      try { S.ping[name] = await api('/api/ping?' + qs({ s: name })); }
+      catch (e) { S.ping[name] = { up: false, error: e.message }; }
+      renderSidebar();
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  if (manual) toast(`${Object.values(S.ping).filter((p) => p.up).length} of ${S.servers.length} servers reachable`);
+  pingTimer = setTimeout(pingAll, 30000);
+}
+
+// ---------------------------------------------------------------- select ---
+function server() { return S.servers.find((s) => s.name === S.sel); }
+
+function select(name) {
+  if (S.sel === name) { $('side').classList.remove('open'); return; }
+  S.sel = name;
+  store.set('sel', name);
+  S.files = null; S.fileSel = null; S.fileFilter = ''; S.filesErr = null;
+  $('side').classList.remove('open');
+  renderSidebar();
+  const b = document.querySelector(`.srv[data-name="${CSS.escape(name)}"]`);
+  if (b) b.scrollIntoView({ block: 'nearest' });
+  renderMain();
+  startPolling();
+  if (S.tab === 'files') loadDir(S.cwd[name] || '');
+}
+
+function setTab(t) {
+  S.tab = t;
+  store.set('tab', t);
+  renderMain();
+  if (t === 'files' && (!S.files || S.files.server !== S.sel)) loadDir(S.cwd[S.sel] || '');
+  if (t === 'console') setTimeout(() => { const i = $('cmdIn'); if (i) i.focus(); }, 0);
+}
+
+// ------------------------------------------------------------------ main ---
+function renderMain() {
+  const s = server();
+  const main = $('main');
+  const menuBtn = el('button', { class: 'btn ghost icon menu-btn', title: 'Servers',
+    onclick: () => $('side').classList.toggle('open') }, icon('menu'));
+  if (!s) {
+    main.replaceChildren(
+      el('div', { class: 'top' }, el('div', { class: 'title' }, menuBtn, el('h1', { text: 'Dashboard' }))),
+      el('div', { class: 'pane' }, el('div', { class: 'state' },
+        el('div', { class: 'big-ico' }, icon('server')),
+        el('h2', { text: 'Pick a server' }),
+        el('div', { text: 'Choose a server in the sidebar to see its health, browse its files and run commands.' }),
+        el('div', { class: 'faint', style: 'margin-top:8px' }, 'Press ', el('kbd', { text: '/' }), ' to search.'))));
+    return;
+  }
+  const tabs = [['overview', 'Overview', 'activity'], ['files', 'Files', 'folder'], ['console', 'Console', 'terminal']];
+  main.replaceChildren(
+    el('div', { class: 'top' },
+      el('div', { class: 'title' }, menuBtn,
+        el('div', { style: 'min-width:0' },
+          el('h1', { text: s.name }),
+          el('div', { class: 'sub mono', text: s.label + (s.note ? '  ·  ' + s.note : '') }))),
+      el('div', { class: 'chips', id: 'chips' }),
+      el('nav', { class: 'tabs' }, tabs.map(([id, label, ic]) =>
+        el('button', { class: 'tab' + (S.tab === id ? ' on' : ''), onclick: () => setTab(id) }, icon(ic), label)))),
+    el('div', { class: 'pane', id: 'pane' }));
+  renderChips();
+  if (S.tab === 'overview') renderOverview();
+  else if (S.tab === 'files') renderFiles();
+  else renderConsole();
+}
+
+function renderChips() {
+  const box = $('chips');
+  if (!box) return;
+  const rec = S.stats[S.sel];
+  const d = rec && rec.data;
+  const age = rec && rec.at ? (Date.now() - rec.at) / 1000 : Infinity;
+  const live = el('span', { class: 'live' + (rec && rec.err ? ' err' : age > 15 ? ' stale' : '') });
+  const chips = [el('span', { class: 'chip', title: rec && rec.err ? rec.err : 'live' }, live,
+    rec && rec.err ? 'offline' : d ? 'live' : 'connecting…')];
+  if (d) {
+    if (d.cpu >= 0) chips.push(el('span', { class: 'chip' }, 'CPU ', el('b', { text: d.cpu.toFixed(0) + '%' })));
+    if (d.memTotal) chips.push(el('span', { class: 'chip' }, 'RAM ', el('b', { text: pct(d.memUsed, d.memTotal).toFixed(0) + '%' })));
+    chips.push(el('span', { class: 'chip' }, 'up ', el('b', { text: fmtUptime(d.uptime) })));
+    chips.push(el('span', { class: 'chip', title: 'round trip of the last poll' }, el('b', { text: d.latency + ' ms' })));
+  }
+  box.replaceChildren(...chips);
+}
+
+// --------------------------------------------------------------- polling ---
+let pollTimer = null, pollSeq = 0;
+function startPolling() { clearTimeout(pollTimer); pollSeq++; poll(pollSeq); }
+async function poll(seq) {
+  const name = S.sel;
+  if (!name) return;
+  try {
+    const d = await api('/api/stats?' + qs({ s: name }));
+    S.stats[name] = { data: d, err: null, at: Date.now() };
+    const h = S.hist[name] || (S.hist[name] = { cpu: [], mem: [], rx: [], tx: [] });
+    const push = (k, v) => { h[k].push(v); if (h[k].length > 60) h[k].shift(); };
+    push('cpu', Math.max(0, d.cpu));
+    push('mem', pct(d.memUsed, d.memTotal));
+    push('rx', d.netRx); push('tx', d.netTx);
+  } catch (e) {
+    S.stats[name] = { ...(S.stats[name] || {}), err: e.message };
+  }
+  if (seq !== pollSeq) return;
+  if (name === S.sel) {
+    renderChips();
+    if (S.tab === 'overview') renderOverview();
+  }
+  const failed = S.stats[name] && S.stats[name].err;
+  pollTimer = setTimeout(() => poll(seq), document.hidden ? 20000 : failed ? 10000 : 2500);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.sel) startPolling(); });
+
+// --------------------------------------------------------------- overview --
+function ring(p, lvl) {
+  const r = 30, c = 2 * Math.PI * r, v = Math.max(0, Math.min(100, p));
+  const color = `var(--${lvl})`;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 72 72');
+  svg.setAttribute('class', 'ring');
+  svg.innerHTML =
+    `<circle class="bg" cx="36" cy="36" r="${r}" fill="none" stroke-width="7"/>` +
+    `<circle cx="36" cy="36" r="${r}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round" ` +
+    `stroke-dasharray="${(c * v / 100).toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 36 36)" style="transition:stroke-dasharray .6s"/>` +
+    `<text x="36" y="41" text-anchor="middle">${v.toFixed(0)}%</text>`;
+  return svg;
+}
+
+// spark draws one or more series on a shared scale. Only numbers reach innerHTML.
+function spark(series, max) {
+  const W = 120, H = 40, N = 60;
+  const top = max || Math.max(1, ...series.flatMap((s) => s.data));
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('class', 'spark');
+  let html = '';
+  for (const s of series) {
+    const d = s.data;
+    if (d.length < 2) continue;
+    const x = (i) => (W * (N - d.length + i)) / (N - 1);
+    const y = (v) => H - 2 - ((H - 4) * Math.min(v, top)) / top;
+    const line = d.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(2)},${y(v).toFixed(2)}`).join('');
+    html += `<path d="${line}L${x(d.length - 1).toFixed(2)},${H}L${x(0).toFixed(2)},${H}Z" fill="${s.color}" opacity=".12"/>`;
+    html += `<path d="${line}" fill="none" stroke="${s.color}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  }
+  if (!html) html = `<line x1="0" y1="${H - 1}" x2="${W}" y2="${H - 1}" stroke="var(--track)" stroke-width="1"/>`;
+  svg.innerHTML = html;
+  return svg;
+}
+
+function card(title, ic, right, ...body) {
+  return el('section', { class: 'card' },
+    el('h3', {}, icon(ic), title, right ? el('span', { class: 'r', text: right }) : null), ...body);
+}
+
+function bar(p, lvl) {
+  return el('div', { class: 'bar lvl-' + (lvl || level(p)) }, el('i', { style: `width:${Math.max(0, Math.min(100, p)).toFixed(1)}%` }));
+}
+
+function renderOverview() {
+  const pane = $('pane');
+  if (!pane) return;
+  const rec = S.stats[S.sel];
+  const s = server();
+  if (!rec || (!rec.data && !rec.err)) {
+    const sk = (h) => el('div', { class: 'card' }, el('div', { class: 'skel', style: `height:${h}px` }));
+    pane.replaceChildren(el('div', { class: 'grid' },
+      el('div', { class: 'grid g4' }, sk(120), sk(120), sk(120), sk(120)),
+      el('div', { class: 'grid g3' }, sk(160), sk(160)),
+      el('div', { class: 'faint', style: 'text-align:center', text: `Connecting to ${s.label}…` })));
+    return;
+  }
+  const parts = [];
+  if (rec.err) parts.push(errorBox('Cannot reach ' + s.name, rec.err, s, 'Retrying every 10 seconds.'));
+  const d = rec.data;
+  if (!d) { pane.replaceChildren(...parts); return; }
+  const h = S.hist[S.sel] || { cpu: [], mem: [], rx: [], tx: [] };
+
+  const cpuP = d.cpu >= 0 ? d.cpu : 0;
+  const memP = pct(d.memUsed, d.memTotal);
+  const swapP = pct(d.swapUsed, d.swapTotal);
+  const cores = d.cores || 1;
+
+  const cpuCard = card('CPU', 'cpu', d.cores ? `${d.cores} cores` : '',
+    el('div', { class: 'metric' }, ring(cpuP, level(cpuP)),
+      el('div', {},
+        el('div', { class: 'big' }, d.cpu >= 0 ? d.cpu.toFixed(1) : '–', el('small', { text: '%' })),
+        el('div', { class: 'kv' }, 'load ', el('b', { text: d.load[0].toFixed(2) })))),
+    spark([{ data: h.cpu, color: 'var(--accent)' }], 100));
+
+  const memCard = card('Memory', 'mem', d.memTotal ? fmtBytes(d.memTotal) : '',
+    el('div', { class: 'metric' }, ring(memP, level(memP)),
+      el('div', {},
+        el('div', { class: 'big' }, fmtBytes(d.memUsed).split(' ')[0], el('small', { text: fmtBytes(d.memUsed).split(' ')[1] || '' })),
+        el('div', { class: 'kv' }, 'cache ', el('b', { text: fmtBytes(d.memCache) })),
+        d.swapTotal ? el('div', { class: 'kv' }, 'swap ', el('b', { text: `${fmtBytes(d.swapUsed)} / ${fmtBytes(d.swapTotal)}` })) :
+          el('div', { class: 'kv faint', text: 'no swap' }))),
+    spark([{ data: h.mem, color: 'var(--ok)' }], 100));
+
+  const netCard = card('Network', 'net', '',
+    el('div', { class: 'net-row' },
+      el('div', {}, el('div', { class: 'lbl' }, el('span', { class: 'sw', style: 'background:var(--rx)' }), 'Download'),
+        el('div', { class: 'big', text: fmtRate(d.netRx) })),
+      el('div', {}, el('div', { class: 'lbl' }, el('span', { class: 'sw', style: 'background:var(--tx)' }), 'Upload'),
+        el('div', { class: 'big', text: fmtRate(d.netTx) }))),
+    spark([{ data: h.rx, color: 'var(--rx)' }, { data: h.tx, color: 'var(--tx)' }]));
+
+  const loadCard = card('Load average', 'gauge', `${cores} cores`,
+    el('div', { class: 'loads' }, ['1 min', '5 min', '15 min'].map((lbl, i) => {
+      const p = (100 * d.load[i]) / cores;
+      return el('div', {}, el('div', { class: 'lbl', text: lbl }),
+        el('div', { class: 'big', text: d.load[i].toFixed(2) }), bar(p));
+    })),
+    el('div', { class: 'kv', style: 'margin-top:14px' },
+      el('b', { text: String(d.users) }), d.users === 1 ? ' user logged in' : ' users logged in'));
+
+  const disks = card('Disks', 'disk', d.disks.length ? `${d.disks.length} mounted` : '',
+    d.disks.length ? d.disks.map((k) => {
+      const p = pct(k.used, k.size);
+      return el('div', { class: 'disk' },
+        el('div', { style: 'min-width:0' }, el('div', { class: 'mnt', text: k.mount, title: k.mount }),
+          el('div', { class: 'fs', text: k.fs, title: k.fs })),
+        bar(p),
+        el('div', { class: 'num' }, el('b', { text: p.toFixed(0) + '%', style: 'color:var(--text)' }),
+          `  ${fmtBytes(k.used)} / ${fmtBytes(k.size)}`));
+    }) : el('div', { class: 'faint', text: 'No disk information.' }));
+
+  const sysRows = [
+    ['Hostname', d.host], ['System', d.os], ['Kernel', d.kernel], ['Processor', d.cpuModel],
+    ['Uptime', fmtUptime(d.uptime)], ['Auth', s.auth === 'key' ? 'key file' : s.auth === 'password' ? 'stored password' : 'agent / default keys'],
+  ].filter(([, v]) => v);
+  const sys = card('System', 'info', '', el('dl', { class: 'sys' }, sysRows.map(([k, v]) => [el('dt', { text: k }), el('dd', { text: v })])));
+
+  const procs = card('Top processes', 'list', 'by CPU',
+    d.procs.length ? el('table', { class: 'procs' },
+      el('thead', {}, el('tr', {}, el('th', { text: 'PID' }), el('th', { class: 'num', text: 'CPU %' }),
+        el('th', { class: 'num', text: 'MEM %' }), el('th', { class: 'num', text: 'RSS' }), el('th', { text: 'Command' }))),
+      el('tbody', {}, d.procs.map((p) => el('tr', {},
+        el('td', { class: 'muted', text: p.pid }), el('td', { class: 'num', text: p.cpu.toFixed(1) }),
+        el('td', { class: 'num', text: p.mem.toFixed(1) }), el('td', { class: 'num muted', text: fmtBytes(p.rss) }),
+        el('td', { text: p.cmd })))))
+      : el('div', { class: 'faint', text: 'Process list unavailable on this system.' }));
+
+  parts.push(el('div', { class: 'grid' },
+    el('div', { class: 'grid g4' }, cpuCard, memCard, netCard, loadCard),
+    el('div', { class: 'grid g3' }, disks, sys),
+    procs));
+  pane.replaceChildren(...parts);
+}
+
+function errorBox(title, msg, s, extra) {
+  const hints = [];
+  if (/permission denied/i.test(msg)) {
+    hints.push(s.auth === 'agent'
+      ? 'No key or password is stored for this server. Add one with `sshm edit ' + s.name + '`, or load a key into ssh-agent.'
+      : 'The stored credentials were rejected.');
+  }
+  if (/host key/i.test(msg)) hints.push('The host key changed. Check it, then update ~/.ssh/known_hosts.');
+  if (extra) hints.push(extra);
+  return el('div', { class: 'errbox' }, icon('alert'),
+    el('div', { style: 'min-width:0' }, el('b', { text: title }), el('pre', { text: msg }),
+      hints.map((h) => el('div', { class: 'kv', style: 'margin-top:6px', text: h }))));
+}
+
+// ----------------------------------------------------------------- files ---
+async function loadDir(path, keepSel) {
+  const name = S.sel;
+  S.filesLoading = true; S.filesErr = null;
+  if (S.tab === 'files') renderFiles();
+  try {
+    const l = await api('/api/ls?' + qs({ s: name, path: path || '' }));
+    if (name !== S.sel) return;
+    const changed = !S.files || S.files.path !== l.path;
+    S.files = { server: name, path: l.path, entries: l.entries };
+    S.cwd[name] = l.path;
+    if (changed && !keepSel) { S.fileSel = null; S.fileFilter = ''; }
+  } catch (e) {
+    if (name !== S.sel) return;
+    S.filesErr = e.message;
+    if (!S.files || S.files.server !== name) S.files = null;
+    else toast(e.message, 'err');
+  } finally {
+    if (name === S.sel) { S.filesLoading = false; if (S.tab === 'files') renderFiles(); }
+  }
+}
+
+function shownEntries() {
+  if (!S.files) return [];
+  const f = S.fileFilter.toLowerCase();
+  const { key, dir } = S.fileSort;
+  return S.files.entries
+    .filter((e) => (S.showHidden || !e.name.startsWith('.')) && (!f || e.name.toLowerCase().includes(f)))
+    .sort((a, b) => {
+      if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+      let v = 0;
+      if (key === 'size') v = a.size - b.size;
+      else if (key === 'mtime') v = a.mtime - b.mtime;
+      if (!v) v = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+      return v * dir;
+    });
+}
+
+function crumbs(path) {
+  const box = el('div', { class: 'crumbs', title: 'Click the empty space to type a path' });
+  if (S.editingPath) {
+    const inp = el('input', { value: path, spellcheck: 'false' });
+    const done = (go) => {
+      S.editingPath = false;
+      const v = inp.value.trim();
+      if (go && v) loadDir(v); else renderFiles();
+    };
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') done(true);
+      if (e.key === 'Escape') { e.stopPropagation(); done(false); }
+    });
+    inp.addEventListener('blur', () => { if (S.editingPath) done(false); });
+    box.append(inp);
+    setTimeout(() => { inp.focus(); inp.select(); }, 0);
+    return box;
+  }
+  const segs = path.split('/').filter(Boolean);
+  box.append(el('button', { text: '/', onclick: () => loadDir('/') }));
+  let acc = '';
+  segs.forEach((seg, i) => {
+    acc += '/' + seg;
+    const target = acc;
+    if (i) box.append(el('span', { class: 'sep', text: '/' }));
+    box.append(el('button', { text: seg, onclick: () => loadDir(target) }));
+  });
+  box.append(el('span', { class: 'fill', onclick: () => { S.editingPath = true; renderFiles(); } }));
+  return box;
+}
+
+function renderFiles() {
+  const pane = $('pane');
+  if (!pane || S.tab !== 'files') return;
+  const s = server();
+  if (!S.files) {
+    pane.replaceChildren(S.filesErr
+      ? el('div', {}, errorBox('Cannot open the file browser', S.filesErr, s),
+          el('button', { class: 'btn', onclick: () => loadDir(S.cwd[S.sel] || '') }, icon('refresh'), 'Try again'))
+      : el('div', { class: 'state' }, el('div', { class: 'skel', style: 'width:100%;max-width:700px;height:260px' })));
+    return;
+  }
+  const path = S.files.path;
+  const rows = shownEntries();
+  const sortHead = (key, label, cls) => {
+    const on = S.fileSort.key === key;
+    return el('th', { class: cls, onclick: () => {
+      S.fileSort = { key, dir: on ? -S.fileSort.dir : 1 };
+      store.set('fileSort', S.fileSort);
+      renderFiles();
+    } }, label, on ? el('span', { class: 'arr', text: S.fileSort.dir > 0 ? ' ↑' : ' ↓' }) : null);
+  };
+
+  const fileInput = el('input', { type: 'file', multiple: true, style: 'display:none',
+    onchange: (e) => { uploadFiles([...e.target.files]); e.target.value = ''; } });
+
+  const filterInp = el('input', { class: 'filter', placeholder: 'Filter this folder', value: S.fileFilter,
+    spellcheck: 'false', oninput: (e) => { S.fileFilter = e.target.value; renderTable(); } });
+
+  const tbody = el('tbody');
+  const wrap = el('div', { class: 'ftable-wrap', tabindex: '0' });
+  const drop = el('div', { class: 'drop' }, el('div', {}, icon('upload'), ' Drop files to upload to ', el('span', { class: 'mono', text: path })));
+
+  function renderTable() {
+    const list = shownEntries();
+    tbody.replaceChildren();
+    if (path !== '/') {
+      tbody.append(el('tr', { class: 'row', ondblclick: () => loadDir(parentOf(path)) },
+        el('td', { colspan: 5 }, el('div', { class: 'fname' }, icon('up', 'ico-dir'), el('span', { class: 'muted', text: '..' })))));
+    }
+    for (const e of list) {
+      const full = joinPath(path, e.name);
+      const ic = e.type === 'link' ? icon(e.isDir ? 'folder' : 'link', 'ico-link') : e.isDir ? icon('folder', 'ico-dir') : icon('file', 'ico-file');
+      const actBtn = (ic2, title, fn, cls = '') => el('button', { class: 'btn ghost ' + cls, title,
+        onclick: (ev) => { ev.stopPropagation(); fn(); } }, icon(ic2));
+      const tr = el('tr', {
+        class: 'row' + (S.fileSel === e.name ? ' on' : ''),
+        ondblclick: () => openEntry(e),
+      },
+      el('td', { style: 'max-width:0;width:50%' }, el('div', { class: 'fname' }, ic, el('span', { text: e.name, title: e.name }),
+        e.type === 'link' ? el('span', { class: 'lnk', text: 'link' }) : null)),
+      el('td', { class: 'num muted', text: e.isDir ? '' : fmtBytes(e.size) }),
+      el('td', { class: 'muted col-mtime', style: 'white-space:nowrap', text: fmtTime(e.mtime) }),
+      el('td', { class: 'perm col-perm', text: fmtPerm(e.mode, e.type) }),
+      el('td', {}, el('div', { class: 'acts' },
+        !e.isDir ? actBtn('edit', 'Edit', () => openEditor(full)) : null,
+        actBtn('download', e.isDir ? 'Download as .tar.gz' : 'Download', () => download(full, e.isDir)),
+        actBtn('rename', 'Rename', () => renameEntry(e)),
+        actBtn('trash', 'Delete', () => deleteEntry(e), 'danger'))));
+      tr.addEventListener('click', () => {
+        S.fileSel = e.name;
+        tbody.querySelectorAll('tr.on').forEach((r) => r.classList.remove('on'));
+        tr.classList.add('on');
+      });
+      tbody.append(tr);
+    }
+    if (!list.length) {
+      tbody.append(el('tr', {}, el('td', { colspan: 5, class: 'faint', style: 'text-align:center;padding:40px',
+        text: S.fileFilter ? 'Nothing matches the filter.' : 'This folder is empty. Drop files here to upload.' })));
+    }
+    $('fcount') && ($('fcount').textContent = `${list.length} items` +
+      (S.files.entries.length !== list.length ? ` (${S.files.entries.length - list.length} hidden)` : ''));
+  }
+
+  wrap.append(drop, el('table', { class: 'ftable' },
+    el('thead', {}, el('tr', {},
+      sortHead('name', 'Name'), sortHead('size', 'Size', 'num'), sortHead('mtime', 'Modified', 'col-mtime'),
+      el('th', { class: 'nosort col-perm', text: 'Mode' }), el('th', { class: 'nosort' }))),
+    tbody));
+
+  // drag and drop
+  let depth = 0;
+  wrap.addEventListener('dragenter', (e) => { if (hasFiles(e)) { e.preventDefault(); depth++; drop.classList.add('on'); } });
+  wrap.addEventListener('dragover', (e) => { if (hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+  wrap.addEventListener('dragleave', () => { if (--depth <= 0) { depth = 0; drop.classList.remove('on'); } });
+  wrap.addEventListener('drop', (e) => {
+    e.preventDefault(); depth = 0; drop.classList.remove('on');
+    const items = [...(e.dataTransfer.items || [])];
+    const dirs = items.filter((it) => it.webkitGetAsEntry && it.webkitGetAsEntry() && it.webkitGetAsEntry().isDirectory);
+    if (dirs.length) toast('Folders cannot be uploaded directly — compress them first.', 'err');
+    const files = [...e.dataTransfer.files].filter((f, i) => !(items[i] && items[i].webkitGetAsEntry && items[i].webkitGetAsEntry() && items[i].webkitGetAsEntry().isDirectory));
+    if (files.length) uploadFiles(files);
+  });
+
+  pane.replaceChildren(el('div', { class: 'files' },
+    el('div', { class: 'toolbar' },
+      el('button', { class: 'btn icon', title: 'Up one level (Backspace)', disabled: path === '/', onclick: () => loadDir(parentOf(path)) }, icon('up')),
+      crumbs(path),
+      el('button', { class: 'btn icon', title: 'Refresh', onclick: () => loadDir(path, true) }, icon('refresh')),
+      el('button', { class: 'btn icon' + (S.showHidden ? '' : ' on'), title: S.showHidden ? 'Hide dotfiles' : 'Show dotfiles',
+        onclick: () => { S.showHidden = !S.showHidden; store.set('hidden', S.showHidden); renderFiles(); } }, icon(S.showHidden ? 'eye' : 'eyeOff'))),
+    el('div', { class: 'toolbar' },
+      el('button', { class: 'btn primary', onclick: () => fileInput.click() }, icon('upload'), 'Upload'),
+      el('button', { class: 'btn', onclick: newFolder }, icon('folderPlus'), 'New folder'),
+      el('button', { class: 'btn', onclick: newFile }, icon('filePlus'), 'New file'),
+      el('span', { style: 'flex:1' }),
+      filterInp, fileInput),
+    wrap,
+    el('div', { class: 'fstatus' }, el('span', { id: 'fcount' }),
+      S.filesLoading ? el('span', { text: 'loading…' }) : null,
+      el('span', { style: 'margin-left:auto' }, 'Double-click to open · drag files in to upload'))));
+  renderTable();
+}
+
+const hasFiles = (e) => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+
+function openEntry(e) {
+  const full = joinPath(S.files.path, e.name);
+  if (e.isDir) loadDir(full);
+  else openEditor(full);
+}
+
+function download(full, isDir) {
+  const a = el('a', { href: '/api/download?' + qs({ s: S.sel, path: full, dir: isDir ? '1' : '0' }), download: '' });
+  document.body.append(a); a.click(); a.remove();
+  toast(`Downloading ${baseOf(full)}${isDir ? '.tar.gz' : ''}…`);
+}
+
+async function newFolder() {
+  const name = await askText('New folder', `Create a folder in ${S.files.path}`, '', 'Create');
+  if (!name) return;
+  if (name.includes('/')) return toast('Use a plain name, without "/".', 'err');
+  try { await post('/api/mkdir', { s: S.sel, path: joinPath(S.files.path, name) }); toast('Created ' + name, 'ok'); loadDir(S.files.path, true); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+async function newFile() {
+  const name = await askText('New file', `Create a file in ${S.files.path}`, '', 'Create');
+  if (!name) return;
+  if (name.includes('/')) return toast('Use a plain name, without "/".', 'err');
+  if (S.files.entries.some((e) => e.name === name)) return toast(name + ' already exists.', 'err');
+  openEditor(joinPath(S.files.path, name), '');
+}
+
+async function renameEntry(e) {
+  const to = await askText('Rename', `Rename ${e.name} to:`, e.name, 'Rename');
+  if (!to || to === e.name) return;
+  const dest = to.startsWith('/') ? to : joinPath(S.files.path, to);
+  try { await post('/api/rename', { s: S.sel, path: joinPath(S.files.path, e.name), to: dest }); toast('Renamed to ' + to, 'ok'); S.fileSel = to; loadDir(S.files.path, true); }
+  catch (err) { toast(err.message, 'err'); }
+}
+
+async function deleteEntry(e) {
+  const full = joinPath(S.files.path, e.name);
+  const ok = await confirmBox(`Delete ${e.name}?`,
+    e.isDir && e.type !== 'link' ? `${full} and everything inside it will be deleted from ${S.sel}. This cannot be undone.`
+      : `${full} will be deleted from ${S.sel}. This cannot be undone.`);
+  if (!ok) return;
+  try { await post('/api/rm', { s: S.sel, path: full }); toast('Deleted ' + e.name, 'ok'); loadDir(S.files.path, true); }
+  catch (err) { toast(err.message, 'err'); }
+}
+
+// Uploads go one at a time so the progress bars mean something and a slow
+// link is not split between several files.
+let uploadQueue = Promise.resolve();
+function uploadFiles(files) {
+  const name = S.sel, dir = S.files.path;
+  for (const f of files) {
+    const t = toast('', '', 0);
+    const label = el('span', { text: f.name }), pctEl = el('span', { class: 'faint', text: 'queued' });
+    const fill = el('i', { style: 'width:0%' });
+    t.append(el('div', { class: 't-name' }, label, pctEl), el('div', { class: 'bar lvl-ok' }, fill));
+    uploadQueue = uploadQueue.then(() => new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload?' + qs({ s: name, dir }));
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        const p = (100 * e.loaded) / e.total;
+        fill.style.width = p.toFixed(1) + '%';
+        pctEl.textContent = `${p.toFixed(0)}% · ${fmtBytes(f.size)}`;
+      };
+      xhr.onload = () => {
+        let err = null;
+        if (xhr.status >= 300) { try { err = JSON.parse(xhr.responseText).error; } catch { err = xhr.statusText; } }
+        if (err) { t.classList.add('err'); pctEl.textContent = 'failed'; t.append(el('div', { class: 'faint', text: err })); setTimeout(() => t.remove(), 8000); }
+        else {
+          t.classList.add('ok'); pctEl.textContent = 'done'; fill.style.width = '100%'; setTimeout(() => t.remove(), 2500);
+          if (S.sel === name && S.files && S.files.path === dir) loadDir(dir, true);
+        }
+        resolve();
+      };
+      xhr.onerror = () => { t.classList.add('err'); pctEl.textContent = 'failed'; setTimeout(() => t.remove(), 8000); resolve(); };
+      const fd = new FormData();
+      fd.append('file', f, f.name);
+      pctEl.textContent = 'uploading…';
+      xhr.send(fd);
+    }));
+  }
+}
+
+// ---------------------------------------------------------------- editor ---
+async function openEditor(full, initial) {
+  const name = S.sel;
+  let content = initial;
+  if (content == null) {
+    try { content = (await api('/api/read?' + qs({ s: name, path: full }))).content; }
+    catch (e) { toast(e.message, 'err'); return; }
+  }
+  let saved = content;
+  const ta = el('textarea', { spellcheck: 'false', autofocus: true });
+  ta.value = content;
+  const dirty = el('span', { class: 'dirty', title: 'unsaved changes' });
+  const pos = el('span');
+  const updPos = () => {
+    const before = ta.value.slice(0, ta.selectionStart);
+    const ln = before.split('\n').length, col = before.length - before.lastIndexOf('\n');
+    pos.textContent = `Ln ${ln}, Col ${col}`;
+  };
+  const isDirty = () => ta.value !== saved;
+  const sync = () => dirty.classList.toggle('on', isDirty());
+  let closeFn;
+  const save = async () => {
+    try {
+      await api('/api/write?' + qs({ s: name, path: full }), { method: 'POST', body: ta.value });
+      saved = ta.value; sync();
+      toast('Saved ' + baseOf(full), 'ok', 2000);
+      if (S.sel === name && S.files && S.files.path === parentOf(full)) loadDir(S.files.path, true);
+    } catch (e) { toast(e.message, 'err'); }
+  };
+  const tryClose = async () => {
+    if (isDirty() && !(await confirmBox('Discard changes?', `Your edits to ${baseOf(full)} have not been saved.`, 'Discard'))) return;
+    closeFn(null);
+  };
+  ta.addEventListener('input', sync);
+  ta.addEventListener('keyup', updPos);
+  ta.addEventListener('click', updPos);
+  ta.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(); }
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      const { selectionStart: a, selectionEnd: b } = ta;
+      ta.setRangeText('\t', a, b, 'end'); sync();
+    }
+  });
+  await modal((close) => {
+    closeFn = close;
+    return el('div', { class: 'modal editor' },
+      el('header', {}, icon('file'), el('span', { class: 'p', text: `${name}:${full}`, title: full }), dirty,
+        el('button', { class: 'btn primary', onclick: save }, 'Save ', el('kbd', { text: '⌘S', style: 'border-color:transparent;background:none;color:inherit' })),
+        el('button', { class: 'btn ghost icon', title: 'Close', onclick: tryClose }, icon('x'))),
+      ta,
+      el('footer', {}, pos, el('span', { text: `${content.split('\n').length} lines` }),
+        el('span', { style: 'margin-left:auto', text: initial != null ? 'new file — saved on first Save' : '' })));
+  }, tryClose);
+}
+
+// --------------------------------------------------------------- console ---
+const QUICK = ['uptime', 'df -h', 'free -h', 'top -bn1 | head -20', 'systemctl --failed --no-pager',
+  'docker ps', 'journalctl -n 50 --no-pager', 'ss -tulpn'];
+
+function renderConsole() {
+  const pane = $('pane');
+  if (!pane) return;
+  const s = server();
+  const log = S.term[S.sel] || (S.term[S.sel] = []);
+  const cwd = S.cwd[S.sel] || '~';
+  const term = el('div', { class: 'term', id: 'term' });
+  if (!log.length) {
+    term.append(el('div', { class: 'hint', text: `Run a command on ${s.name}. Each one runs on its own, starting in the folder shown in the prompt; "cd" carries over.` }),
+      el('div', { class: 'hint', text: 'Interactive programs (vim, top without -b, sudo prompts) need a real terminal — use `sshm ssh ' + s.name + '`.' }));
+  }
+  for (const r of log) {
+    term.append(el('div', { class: 'cmd' }, el('span', { class: 'p', text: (r.cwd || '~') + ' $ ' }), r.cmd));
+    if (r.out) term.append(el('pre', { text: r.out }));
+    if (r.running) term.append(el('div', { class: 'meta', text: 'running…' }));
+    else if (r.err) term.append(el('div', { class: 'meta bad', text: r.err }));
+    else term.append(el('div', { class: 'meta' + (r.code ? ' bad' : ''), text: `exit ${r.code} · ${r.ms} ms` }));
+  }
+  let hi = S.termHist.length;
+  const inp = el('input', { id: 'cmdIn', placeholder: 'Type a command and press Enter', spellcheck: 'false', autocomplete: 'off' });
+  inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && inp.value.trim()) { runCmd(inp.value); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (hi > 0) inp.value = S.termHist[--hi]; }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); if (hi < S.termHist.length) { hi++; inp.value = S.termHist[hi] || ''; } }
+    else if (e.key === 'l' && e.ctrlKey) { e.preventDefault(); S.term[S.sel] = []; renderConsole(); }
+  });
+  pane.replaceChildren(el('div', { class: 'console' },
+    el('div', { class: 'quick' }, QUICK.map((c) => el('button', { text: c, onclick: () => runCmd(c) })),
+      el('span', { style: 'flex:1' }),
+      el('button', { text: 'clear', onclick: () => { S.term[S.sel] = []; renderConsole(); } })),
+    term,
+    el('div', { class: 'prompt' }, el('span', { class: 'ps', text: `${s.user ? s.user + '@' : ''}${s.name}:${cwd}$`, title: cwd }), inp,
+      el('button', { class: 'btn primary', onclick: () => inp.value.trim() && runCmd(inp.value) }, icon('play'), 'Run'))));
+  term.scrollTop = term.scrollHeight;
+  inp.focus();
+}
+
+async function runCmd(cmd) {
+  const name = S.sel;
+  cmd = cmd.trim();
+  if (S.termHist[S.termHist.length - 1] !== cmd) { S.termHist.push(cmd); S.termHist = S.termHist.slice(-200); store.set('termHist', S.termHist); }
+  const log = S.term[name] || (S.term[name] = []);
+  const rec = { cmd, cwd: S.cwd[name] || '', running: true };
+  log.push(rec);
+  if (log.length > 100) log.shift();
+  if (S.tab === 'console' && S.sel === name) renderConsole();
+  try {
+    const r = await post('/api/exec', { s: name, path: rec.cwd, cmd });
+    Object.assign(rec, { out: r.output, code: r.code, ms: r.ms });
+    if (r.cwd) S.cwd[name] = r.cwd;
+  } catch (e) {
+    rec.err = e.message;
+  }
+  rec.running = false;
+  if (S.tab === 'console' && S.sel === name) renderConsole();
+}
+
+// ------------------------------------------------------------- shortcuts ---
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  const typing = t.matches && t.matches('input, textarea');
+  if (document.querySelector('.veil')) return;
+  if (e.key === '/' && !typing) { e.preventDefault(); $('q').focus(); $('q').select(); return; }
+  if (typing || !S.sel) return;
+  if (e.altKey && ['1', '2', '3'].includes(e.key)) { setTab(['overview', 'files', 'console'][+e.key - 1]); return; }
+  if (S.tab !== 'files' || !S.files) return;
+  const list = shownEntries();
+  let i = list.findIndex((x) => x.name === S.fileSel);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    i = e.key === 'ArrowDown' ? Math.min(i + 1, list.length - 1) : Math.max(i - 1, 0);
+    if (list[i]) { S.fileSel = list[i].name; renderFiles(); const r = document.querySelector('tr.row.on'); if (r) r.scrollIntoView({ block: 'nearest' }); }
+  } else if (e.key === 'Enter' && list[i]) { openEntry(list[i]); }
+  else if ((e.key === 'Delete' || (e.key === 'Backspace' && e.metaKey)) && list[i]) { e.preventDefault(); deleteEntry(list[i]); }
+  else if (e.key === 'Backspace' && S.files.path !== '/') { e.preventDefault(); loadDir(parentOf(S.files.path)); }
+  else if (e.key === 'F2' && list[i]) { renameEntry(list[i]); }
+});
+// Dropping a file anywhere else must not make the browser navigate away.
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('drop', (e) => e.preventDefault());
+setInterval(renderChips, 5000);
+
+// ------------------------------------------------------------------- boot --
+(async () => {
+  await loadServers();
+  renderMain();
+  const last = store.get('sel', null);
+  if (last && S.servers.some((s) => s.name === last)) select(last);
+  pingAll();
+})();
+</script>
+</body>
+</html>

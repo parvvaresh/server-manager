@@ -752,5 +752,6 @@ func showHelp() {
 	} {
 		fmt.Printf("    %s%s%s  %s%s%s\n", cAccent+cBold, pad(r[0], 10), cReset, cMuted, r[1], cReset)
 	}
+	fmt.Printf("\n  %sTry `sshm web` for a browser dashboard: live stats, files, uploads.%s\n", cFaint, cReset)
 	fmt.Printf("\n  %sVault: ~/.config/sshm/ (chmod 600) · `sshm lock` encrypts it.%s\n", cFaint, cReset)
 }
