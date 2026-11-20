@@ -1,8 +1,9 @@
 package main
 
-// `sshm web` — a local dashboard in the browser: pick a server in the
-// sidebar, watch its CPU, memory, disks and network, browse its files, upload
-// and download, edit small text files and run one-off commands.
+// `sshm web` — a local dashboard in the browser: see every server at a
+// glance, pick one to watch its CPU, memory, disks and network, browse its
+// files, upload and download, edit small text files, open a terminal, and
+// run a command on many servers at once.
 //
 // The server only listens on the loopback interface and every request must
 // carry a random token, handed over once in the URL and then kept in a
@@ -13,7 +14,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/subtle"
-	_ "embed"
+	"embed"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -32,6 +33,11 @@ import (
 
 //go:embed web/index.html
 var webIndex []byte
+
+// The terminal emulator (xterm.js), loaded only when a terminal is opened.
+//
+//go:embed web/vendor/xterm.js web/vendor/xterm.css web/vendor/addon-fit.js
+var webVendor embed.FS
 
 const tokenCookie = "sshm_token"
 
@@ -138,6 +144,8 @@ func (a *webApp) routes() http.Handler {
 	mux.HandleFunc("/api/rename", a.post(a.handleRename))
 	mux.HandleFunc("/api/rm", a.post(a.handleRemove))
 	mux.HandleFunc("/api/exec", a.post(a.handleExec))
+	mux.HandleFunc("/api/term", a.handleTerm)
+	mux.HandleFunc("/static/", a.get(a.handleStatic))
 	return a.guard(mux)
 }
 
@@ -267,9 +275,31 @@ func (a *webApp) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
+	// Not every browser counts ws:// as 'self', so the terminal's socket is
+	// named outright. r.Host was checked against our own addresses already.
 	w.Header().Set("Content-Security-Policy",
-		"default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:")
+		"default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; "+
+			"connect-src 'self' ws://"+r.Host)
 	_, _ = w.Write(webIndex)
+}
+
+func (a *webApp) handleStatic(w http.ResponseWriter, r *http.Request) {
+	name := strings.TrimPrefix(r.URL.Path, "/static/")
+	b, err := webVendor.ReadFile("web/vendor/" + name)
+	if err != nil || strings.Contains(name, "/") {
+		http.NotFound(w, r)
+		return
+	}
+	switch path.Ext(name) {
+	case ".js":
+		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	case ".css":
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+	}
+	// The page asks for these with ?v=<version>, so a new sshm never gets
+	// an old copy.
+	w.Header().Set("Cache-Control", "private, max-age=86400")
+	_, _ = w.Write(b)
 }
 
 type serverView struct {

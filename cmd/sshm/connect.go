@@ -28,6 +28,7 @@ func rundir() (string, error) {
 }
 
 func cleanupRunDir() {
+	closeTerminals()
 	stopMasters()
 	if runDir != "" {
 		os.RemoveAll(runDir)
@@ -122,11 +123,24 @@ func passwordEnv(s Server, args []string) (cmd string, argv []string, env []stri
 		return "sshpass", append([]string{"-e"}, args...),
 			[]string{"SSHPASS=" + s.Pass}, nil
 	}
-	helper, err := askpassHelper()
+	env, err = askpassEnv(s)
 	if err != nil {
 		return "", nil, nil, err
 	}
-	return args[0], args[1:], []string{
+	return args[0], args[1:], env, nil
+}
+
+// askpassEnv is the environment that makes ssh read the stored password from
+// the askpass helper, whether or not it has a terminal.
+func askpassEnv(s Server) ([]string, error) {
+	if !usesPassword(s) {
+		return nil, nil
+	}
+	helper, err := askpassHelper()
+	if err != nil {
+		return nil, err
+	}
+	return []string{
 		"SSHM_PASS=" + s.Pass,
 		"SSH_ASKPASS=" + helper,
 		"SSH_ASKPASS_REQUIRE=force",

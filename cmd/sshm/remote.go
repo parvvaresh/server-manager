@@ -70,10 +70,16 @@ func stopMasters() {
 	ctlDir = ""
 }
 
-// remoteSSHArgs is the ssh command line for a non-interactive command. Extra
-// options from SSHM_SSH_OPTS come first, because for ssh the first value of
-// an option wins — so a user can override any default chosen here.
+// remoteSSHArgs is the ssh command line for a non-interactive command.
 func remoteSSHArgs(s Server, ctl string) []string {
+	return sshArgs(s, ctl, false)
+}
+
+// sshArgs is the ssh command line the dashboard uses, with a remote terminal
+// (tty) or without one. Extra options from SSHM_SSH_OPTS come first, because
+// for ssh the first value of an option wins — so a user can override any
+// default chosen here.
+func sshArgs(s Server, ctl string, tty bool) []string {
 	port := s.Port
 	if port == "" {
 		port = "22"
@@ -82,7 +88,14 @@ func remoteSSHArgs(s Server, ctl string) []string {
 	if extra := strings.Fields(os.Getenv("SSHM_SSH_OPTS")); len(extra) > 0 {
 		args = append(args, extra...)
 	}
-	args = append(args, "-p", port, "-T",
+	if tty {
+		// The escape character (~.) would only surprise someone typing in
+		// a browser; the page has its own way to end a session.
+		args = append(args, "-p", port, "-tt", "-o", "EscapeChar=none")
+	} else {
+		args = append(args, "-p", port, "-T")
+	}
+	args = append(args,
 		"-o", "ControlMaster=auto",
 		"-o", "ControlPath="+ctl,
 		"-o", "ControlPersist=600",

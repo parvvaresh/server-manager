@@ -4,7 +4,9 @@
 //   - search them as you type
 //   - open ssh or sftp on the selected one
 //   - mark several and open them all in a tiled tmux window
-//   - a browser dashboard: live CPU / memory / disk, a file manager, a console
+//   - run one command on many servers at once
+//   - a browser dashboard: every server at a glance, live CPU / memory /
+//     disk, a file manager, a terminal, and commands across servers
 //
 // The vault format is the same tab separated file the shell version used, and
 // `sshm lock` writes exactly what `openssl enc -aes-256-cbc -pbkdf2` writes,
@@ -77,6 +79,9 @@ func main() {
 	case "multi", "split":
 		load(st)
 		cmdMulti(st, args)
+	case "exec", "run":
+		load(st)
+		cmdExec(st, args)
 	case "copy-id":
 		load(st)
 		cmdCopyID(st, args)
@@ -335,8 +340,12 @@ func usage() {
   %ssshm ssh%s NAME             connect with ssh
   %ssshm sftp%s NAME            connect with sftp
   %ssshm multi%s NAME NAME ...  open them all in a tiled tmux window
+  %ssshm exec%s TARGET... -- CMD
+                            run CMD on every TARGET at once: a name, 'web-*',
+                            tag:NAME or all; -g groups identical output,
+                            -l prefixes each line, -j N parallel, -t SECS
   %ssshm copy-id%s NAME [KEY]   install your public key on a server
-  %ssshm web%s [--port N]       dashboard in the browser: stats, files, console
+  %ssshm web%s [--port N]       dashboard in the browser: stats, files, terminal
   %ssshm lock%s / %sunlock%s       encrypt / decrypt the vault (AES-256, PBKDF2)
   %ssshm export%s [--with-passwords] > backup.tsv
   %ssshm import%s FILE.tsv
@@ -350,5 +359,5 @@ Env: SSHM_HOME (vault dir), SSHM_SSH_OPTS (extra ssh flags)
 		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset,
 		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset,
 		cBold, cReset, cBold, cReset, cBold, cReset, cBold, cReset,
-		cBold, cReset)
+		cBold, cReset, cBold, cReset)
 }
