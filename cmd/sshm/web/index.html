@@ -263,6 +263,84 @@ tr.row:hover .acts, tr.row.on .acts { opacity: 1; }
 .quick button { font: 12px var(--mono); padding: 3px 9px; border-radius: 99px; border: 1px solid var(--border); background: var(--panel); color: var(--muted); }
 .quick button:hover { color: var(--text); border-color: var(--border-strong); }
 
+/* ------------------------------------------------------------- side nav -- */
+.sidenav { display: flex; flex-direction: column; gap: 2px; padding: 0 8px 10px; }
+.navi { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; padding: 7px 10px;
+  border-radius: 8px; color: var(--muted); font-weight: 500; text-align: left; }
+.navi:hover { background: var(--hover); color: var(--text); }
+.navi.on { background: var(--sel); color: var(--text); }
+.navi .n { margin-left: auto; font-size: 11.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.srv .ms svg { width: 13px; height: 13px; color: var(--accent); vertical-align: -2px; }
+
+/* ---------------------------------------------------------------- fleet -- */
+.fleet { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+.fcard { display: flex; flex-direction: column; gap: 9px; cursor: pointer; padding: 14px 16px; outline: none;
+  transition: border-color .15s, box-shadow .15s; }
+.fcard:hover, .fcard:focus-visible { border-color: var(--border-strong); box-shadow: var(--shadow), 0 0 0 3px var(--accent-soft); }
+.fcard.lvl-warn { border-color: color-mix(in srgb, var(--warn) 55%, var(--border)); }
+.fcard.lvl-crit { border-color: color-mix(in srgb, var(--crit) 60%, var(--border)); }
+.fcard.down .fhead, .fcard.down .fmsg { opacity: .8; }
+.fhead { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.fhead .nm { font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fhead .lb { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--mono); }
+.fhead .badge { margin-left: auto; }
+.badge { font-size: 11px; padding: 1px 8px; border-radius: 99px; font-weight: 600; white-space: nowrap; line-height: 18px; }
+.badge.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+.badge.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.badge.crit { background: color-mix(in srgb, var(--crit) 14%, transparent); color: var(--crit); }
+.badge.muted { background: var(--track); color: var(--muted); font-weight: 500; }
+.mrow { display: grid; grid-template-columns: 34px 1fr 40px; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+.mrow .bar { height: 6px; }
+.mrow .v { text-align: right; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.fmeta { display: flex; gap: 4px 12px; flex-wrap: wrap; font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.fmsg { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden; }
+.fissues { display: flex; gap: 5px; flex-wrap: wrap; }
+.spark.sm { height: 24px; margin-top: 0; }
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel); padding: 4px 10px; font-size: 12px; color: var(--muted); }
+.seg button + button { border-left: 1px solid var(--border-strong); }
+.seg button.on { background: var(--accent-soft); color: var(--accent); }
+.foot-hint { margin-top: 18px; font-size: 12px; color: var(--faint); text-align: center; }
+
+/* --------------------------------------------------------- run on many -- */
+.multi { display: flex; flex-direction: column; gap: 14px; }
+.picks { display: flex; gap: 6px; flex-wrap: wrap; }
+.picks + .picks { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.pick { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; border-radius: 99px; border: 1px solid var(--border);
+  background: var(--panel); font-size: 12.5px; color: var(--muted); }
+.pick:hover { border-color: var(--border-strong); color: var(--text); }
+.pick.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.pick .dot { width: 7px; height: 7px; }
+.pick.tagp { font-size: 12px; padding: 3px 10px; }
+.pick .k { color: var(--faint); font-weight: 400; }
+.run { display: flex; flex-direction: column; gap: 10px; }
+.run + .run { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px; }
+.run-head { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; font-size: 12.5px; }
+.run-head .c { font: 600 13px var(--mono); overflow-wrap: anywhere; flex: 1 1 260px; min-width: 0; }
+.rblock { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--panel); }
+.rblock.differs { border-color: color-mix(in srgb, var(--warn) 55%, var(--border)); }
+.rblock.failed { border-color: color-mix(in srgb, var(--crit) 50%, var(--border)); }
+.rblock header { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; padding: 8px 12px; font-size: 12.5px;
+  border-bottom: 1px solid var(--border); }
+.rblock header .who { display: flex; gap: 6px; flex-wrap: wrap; }
+.rblock header .r { margin-left: auto; display: flex; gap: 8px; align-items: center; color: var(--faint); font-variant-numeric: tabular-nums; }
+.sname { font: 600 12.5px var(--mono); }
+.rblock pre { margin: 0; padding: 10px 12px; font: 12.5px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word;
+  max-height: 420px; overflow: auto; background: var(--bg); }
+.rblock pre .d { display: block; background: color-mix(in srgb, var(--warn) 20%, transparent); margin: 0 -12px; padding: 0 12px; }
+.rblock pre .l { display: block; min-height: 1.5em; }
+.rblock .empty { color: var(--faint); font-style: italic; }
+.waiting { font-size: 12.5px; color: var(--faint); }
+
+/* ------------------------------------------------------------- terminal -- */
+.tpane { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.tpane .toolbar .faint { font-size: 12.5px; }
+.xhost { flex: 1; min-height: 260px; background: #0b0e13; border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 6px 6px 12px; overflow: hidden; }
+.tbox { width: 100%; height: 100%; }
+.xterm .xterm-viewport { background: transparent !important; }
+
 /* ------------------------------------------------------- modal / toasts -- */
 .veil { position: fixed; inset: 0; background: rgba(10, 14, 20, .45); display: grid; place-items: center; z-index: 50; padding: 16px; }
 .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg);
@@ -311,6 +389,8 @@ tr.row:hover .acts, tr.row.on .acts { opacity: 1; }
   .disk .bar { grid-column: 1 / -1; grid-row: 2; }
   .acts { opacity: 1; }
   .filter { width: 100%; }
+  .fleet { grid-template-columns: 1fr; }
+  .tpane .toolbar .faint { display: none; }
 }
 </style>
 </head>
@@ -321,6 +401,7 @@ tr.row:hover .acts, tr.row.on .acts { opacity: 1; }
       <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9z" fill="currentColor"/></svg></div>
       <b>sshm</b><span class="ver" id="ver"></span>
     </div>
+    <nav class="sidenav" id="sidenav"></nav>
     <div class="search">
       <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="q" placeholder="Search servers" autocomplete="off" spellcheck="false">
@@ -373,6 +454,8 @@ const ICONS = {
   list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
   play: '<path d="M7 5l12 7-12 7z"/>',
   wifi: '<path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  layers: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
 };
 const icon = (name, cls = '') => {
   const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -467,6 +550,14 @@ const S = {
   term: {},             // name -> [{cmd, out, code, ms, cwd}]
   termHist: store.get('termHist', []),
   editingPath: false,
+  version: '',
+  page: store.get('page', 'fleet'),          // 'fleet' or 'multi' while no server is picked
+  fleetSort: store.get('fleetSort', 'order'),
+  multiSel: store.get('multiSel', []),       // servers picked on "Run on many"
+  multiView: store.get('multiView', 'group'),
+  runs: [],                                  // [{cmd, names, res, start, end, view}]
+  terms: {},                                 // name -> terminal session
+  termPath: {},                              // name -> folder the next terminal starts in
 };
 
 // --------------------------------------------------------------------- api --
@@ -563,7 +654,19 @@ function visibleServers() {
   const terms = $('q').value.toLowerCase().split(/\s+/).filter(Boolean);
   return S.servers.filter((s) => matches(s, terms));
 }
+function renderNav() {
+  const item = (page, ic, label, n) => el('button', {
+    class: 'navi' + (!S.sel && S.page === page ? ' on' : ''), onclick: () => showPage(page),
+  }, icon(ic), label, n != null ? el('span', { class: 'n', text: n }) : null);
+  const up = S.servers.filter((s) => S.ping[s.name] && S.ping[s.name].up).length;
+  const picked = S.multiSel.filter((n) => S.servers.some((s) => s.name === n)).length;
+  $('sidenav').replaceChildren(
+    item('fleet', 'grid', 'All servers', S.servers.length ? `${up}/${S.servers.length} up` : null),
+    item('multi', 'layers', 'Run on many', picked ? `${picked} picked` : null));
+}
+
 function renderSidebar() {
+  renderNav();
   const list = visibleServers();
   $('count').textContent = `${list.length} of ${S.servers.length} servers`;
   if (!S.servers.length) {
@@ -589,10 +692,12 @@ function renderSidebar() {
       el('div', { class: 'nm', text: s.name }),
       el('div', { class: 'lb', text: s.label }),
       s.tags.length ? el('div', { class: 'tags' }, s.tags.slice(0, 4).map((t) => el('span', { class: 'tag', text: t }))) : null),
-    el('span', { class: 'ms', text: p && p.up ? p.ms + ' ms' : '' }));
+    termOpen(s.name)
+      ? el('span', { class: 'ms', title: 'A terminal is open on this server' }, icon('terminal'))
+      : el('span', { class: 'ms', text: p && p.up ? p.ms + ' ms' : '' }));
   }));
 }
-$('q').addEventListener('input', renderSidebar);
+$('q').addEventListener('input', () => { renderSidebar(); if (!S.sel && S.page === 'fleet') scheduleFleet(); });
 $('q').addEventListener('keydown', (e) => {
   const list = visibleServers();
   if (!list.length) return;
@@ -607,6 +712,7 @@ async function loadServers() {
   try {
     const j = await api('/api/servers');
     S.servers = j.servers;
+    S.version = j.version;
     $('ver').textContent = 'v' + j.version;
   } catch (e) {
     toast('Could not load servers: ' + e.message, 'err', 0);
@@ -624,6 +730,7 @@ async function pingAll(manual) {
       try { S.ping[name] = await api('/api/ping?' + qs({ s: name })); }
       catch (e) { S.ping[name] = { up: false, error: e.message }; }
       renderSidebar();
+      if (!S.sel && S.page === 'fleet') scheduleFleet();
     }
   };
   await Promise.all(Array.from({ length: 6 }, worker));
@@ -648,6 +755,21 @@ function select(name) {
   if (S.tab === 'files') loadDir(S.cwd[name] || '');
 }
 
+// showPage leaves the server view for one of the pages about many servers.
+function showPage(page) {
+  S.page = page;
+  store.set('page', page);
+  S.sel = null;
+  store.set('sel', null);
+  $('side').classList.remove('open');
+  renderSidebar();
+  renderMain();
+  startPolling();
+}
+
+const TABS = [['overview', 'Overview', 'activity'], ['files', 'Files', 'folder'],
+  ['terminal', 'Terminal', 'terminal'], ['console', 'Console', 'play']];
+
 function setTab(t) {
   S.tab = t;
   store.set('tab', t);
@@ -657,22 +779,29 @@ function setTab(t) {
 }
 
 // ------------------------------------------------------------------ main ---
+const menuButton = () => el('button', { class: 'btn ghost icon menu-btn', title: 'Servers',
+  onclick: () => $('side').classList.toggle('open') }, icon('menu'));
+
 function renderMain() {
   const s = server();
   const main = $('main');
-  const menuBtn = el('button', { class: 'btn ghost icon menu-btn', title: 'Servers',
-    onclick: () => $('side').classList.toggle('open') }, icon('menu'));
+  const menuBtn = menuButton();
   if (!s) {
+    const multi = S.page === 'multi';
     main.replaceChildren(
-      el('div', { class: 'top' }, el('div', { class: 'title' }, menuBtn, el('h1', { text: 'Dashboard' }))),
-      el('div', { class: 'pane' }, el('div', { class: 'state' },
-        el('div', { class: 'big-ico' }, icon('server')),
-        el('h2', { text: 'Pick a server' }),
-        el('div', { text: 'Choose a server in the sidebar to see its health, browse its files and run commands.' }),
-        el('div', { class: 'faint', style: 'margin-top:8px' }, 'Press ', el('kbd', { text: '/' }), ' to search.'))));
+      el('div', { class: 'top' },
+        el('div', { class: 'title' }, menuBtn,
+          el('div', { style: 'min-width:0' },
+            el('h1', { text: multi ? 'Run on many servers' : 'All servers' }),
+            el('div', { class: 'sub', id: 'pageSub', text: multi
+              ? 'Run one command on several servers at once and compare what they say.'
+              : 'Every server at a glance. Click one to open it.' }))),
+        el('div', { class: 'chips', id: 'chips' })),
+      el('div', { class: 'pane', id: 'pane' }));
+    if (multi) renderMulti(); else renderFleet();
     return;
   }
-  const tabs = [['overview', 'Overview', 'activity'], ['files', 'Files', 'folder'], ['console', 'Console', 'terminal']];
+  const tabs = TABS;
   main.replaceChildren(
     el('div', { class: 'top' },
       el('div', { class: 'title' }, menuBtn,
@@ -686,12 +815,13 @@ function renderMain() {
   renderChips();
   if (S.tab === 'overview') renderOverview();
   else if (S.tab === 'files') renderFiles();
+  else if (S.tab === 'terminal') renderTerminal();
   else renderConsole();
 }
 
 function renderChips() {
   const box = $('chips');
-  if (!box) return;
+  if (!box || !S.sel) return;
   const rec = S.stats[S.sel];
   const d = rec && rec.data;
   const age = rec && rec.at ? (Date.now() - rec.at) / 1000 : Infinity;
@@ -709,10 +839,13 @@ function renderChips() {
 
 // --------------------------------------------------------------- polling ---
 let pollTimer = null, pollSeq = 0;
-function startPolling() { clearTimeout(pollTimer); pollSeq++; poll(pollSeq); }
-async function poll(seq) {
-  const name = S.sel;
-  if (!name) return;
+function startPolling() {
+  clearTimeout(pollTimer);
+  pollSeq++;
+  if (S.sel) poll(pollSeq);
+  else if (S.page === 'fleet') fleetPoll(pollSeq);
+}
+async function fetchStats(name) {
   try {
     const d = await api('/api/stats?' + qs({ s: name }));
     S.stats[name] = { data: d, err: null, at: Date.now() };
@@ -724,6 +857,11 @@ async function poll(seq) {
   } catch (e) {
     S.stats[name] = { ...(S.stats[name] || {}), err: e.message };
   }
+}
+async function poll(seq) {
+  const name = S.sel;
+  if (!name) return;
+  await fetchStats(name);
   if (seq !== pollSeq) return;
   if (name === S.sel) {
     renderChips();
@@ -732,7 +870,7 @@ async function poll(seq) {
   const failed = S.stats[name] && S.stats[name].err;
   pollTimer = setTimeout(() => poll(seq), document.hidden ? 20000 : failed ? 10000 : 2500);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.sel) startPolling(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) startPolling(); });
 
 // --------------------------------------------------------------- overview --
 function ring(p, lvl) {
@@ -884,6 +1022,350 @@ function errorBox(title, msg, s, extra) {
   return el('div', { class: 'errbox' }, icon('alert'),
     el('div', { style: 'min-width:0' }, el('b', { text: title }), el('pre', { text: msg }),
       hints.map((h) => el('div', { class: 'kv', style: 'margin-top:6px', text: h }))));
+}
+
+// ----------------------------------------------------------------- fleet ---
+// Every listed server polled in turn, a few at a time. Servers whose ssh port
+// does not answer are skipped, so a dead one never holds up the rest.
+async function fleetPoll(seq) {
+  const live = () => seq === pollSeq && !S.sel && S.page === 'fleet';
+  const queue = visibleServers().map((s) => s.name);
+  const worker = async () => {
+    while (queue.length && live()) {
+      const name = queue.shift();
+      if (!S.ping[name]) {
+        try { S.ping[name] = await api('/api/ping?' + qs({ s: name })); }
+        catch (e) { S.ping[name] = { up: false, error: e.message }; }
+        renderSidebar();
+      }
+      if (S.ping[name].up) await fetchStats(name);
+      scheduleFleet();
+    }
+  };
+  await Promise.all(Array.from({ length: 4 }, worker));
+  if (live()) pollTimer = setTimeout(() => fleetPoll(seq), document.hidden ? 30000 : 6000);
+}
+
+let fleetFrame = 0;
+function scheduleFleet() {
+  if (fleetFrame) return;
+  fleetFrame = requestAnimationFrame(() => {
+    fleetFrame = 0;
+    if (!S.sel && S.page === 'fleet') renderFleet();
+  });
+}
+
+// serverIssues lists what deserves a look, each 'warn' or 'crit'.
+function serverIssues(d) {
+  const out = [];
+  const check = (p, text) => { const l = level(p); if (l !== 'ok') out.push({ lvl: l, text }); };
+  if (d.cpu >= 0) check(d.cpu, `CPU ${d.cpu.toFixed(0)}%`);
+  if (d.memTotal) { const p = pct(d.memUsed, d.memTotal); check(p, `memory ${p.toFixed(0)}%`); }
+  for (const k of d.disks) { const p = pct(k.used, k.size); check(p, `${k.mount} ${p.toFixed(0)}% full`); }
+  const perCore = d.load[0] / (d.cores || 1);
+  if (perCore >= 2) out.push({ lvl: 'crit', text: `load ${d.load[0].toFixed(1)}` });
+  else if (perCore >= 1) out.push({ lvl: 'warn', text: `load ${d.load[0].toFixed(1)}` });
+  return out;
+}
+
+function fleetState(s) {
+  const p = S.ping[s.name], rec = S.stats[s.name];
+  if (p && !p.up) return { kind: 'down', lvl: 'crit', issues: [{ lvl: 'crit', text: 'unreachable' }], msg: p.error };
+  if (rec && rec.err && (!rec.data || Date.now() - rec.at > 30000)) {
+    return { kind: 'err', lvl: 'warn', issues: [{ lvl: 'warn', text: 'no stats' }], msg: rec.err };
+  }
+  if (!rec || !rec.data) return { kind: 'wait', lvl: 'ok', issues: [] };
+  const d = rec.data;
+  if (d.cpu < 0 && !d.memTotal) return { kind: 'nostats', lvl: 'ok', issues: [], d };
+  const issues = serverIssues(d);
+  const lvl = issues.some((i) => i.lvl === 'crit') ? 'crit' : issues.length ? 'warn' : 'ok';
+  return { kind: 'ok', lvl, issues, d };
+}
+
+function fleetCard(s, st) {
+  const d = st.d;
+  const metric = (label, p, title) => el('div', { class: 'mrow', title },
+    el('span', { text: label }), bar(p), el('span', { class: 'v', text: p.toFixed(0) + '%' }));
+  const body = [];
+  if (st.kind === 'down' || st.kind === 'err') {
+    body.push(el('div', { class: 'fmsg', text: st.msg || 'unreachable' }));
+  } else if (st.kind === 'wait') {
+    body.push(...[0, 1, 2].map(() => el('div', { class: 'skel', style: 'height:12px' })));
+  } else if (st.kind === 'nostats') {
+    body.push(el('div', { class: 'fmsg', text: 'Reachable. Live stats need a Linux server.' }));
+  } else {
+    const worst = d.disks.reduce((a, k) => (!a || pct(k.used, k.size) > pct(a.used, a.size) ? k : a), null);
+    body.push(
+      d.cpu >= 0 ? metric('CPU', d.cpu) : null,
+      d.memTotal ? metric('RAM', pct(d.memUsed, d.memTotal), `${fmtBytes(d.memUsed)} of ${fmtBytes(d.memTotal)}`) : null,
+      worst ? metric('Disk', pct(worst.used, worst.size), `fullest: ${worst.mount} · ${fmtBytes(worst.used)} of ${fmtBytes(worst.size)}`) : null);
+    const h = S.hist[s.name];
+    if (h && h.cpu.length > 1) {
+      const sp = spark([{ data: h.cpu, color: 'var(--accent)' }], 100);
+      sp.setAttribute('class', 'spark sm');
+      body.push(sp);
+    }
+    body.push(el('div', { class: 'fmeta' },
+      el('span', { text: `load ${d.load[0].toFixed(2)}` }), el('span', { text: `up ${fmtUptime(d.uptime)}` }),
+      el('span', { text: `↓ ${fmtRate(d.netRx)}` }), el('span', { text: `↑ ${fmtRate(d.netTx)}` })));
+    if (st.issues.length) {
+      body.push(el('div', { class: 'fissues' }, st.issues.map((i) => el('span', { class: 'badge ' + i.lvl, text: i.text }))));
+    }
+  }
+  const p = S.ping[s.name];
+  // Down or without stats, the badge says why; otherwise it counts the
+  // issues listed in the card, which keeps long mount paths out of the header.
+  const badge = st.kind === 'down' || st.kind === 'err' ? el('span', { class: 'badge ' + st.lvl, text: st.issues[0].text })
+    : st.issues.length ? el('span', { class: 'badge ' + st.lvl, text: st.issues.length === 1 ? '1 issue' : `${st.issues.length} issues` })
+    : st.kind === 'ok' ? el('span', { class: 'badge ok', text: 'healthy' })
+      : st.kind === 'wait' ? el('span', { class: 'badge muted', text: p ? 'loading' : 'checking' }) : null;
+  const open = () => select(s.name);
+  return el('div', {
+    class: `card fcard lvl-${st.lvl} ${st.kind}`, tabindex: '0', role: 'button',
+    onclick: open, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } },
+  },
+  el('div', { class: 'fhead' },
+    el('span', { class: 'dot ' + (p ? (p.up ? 'up' : 'down') : '') }),
+    el('div', { style: 'min-width:0' }, el('div', { class: 'nm', text: s.name }), el('div', { class: 'lb', text: s.label })),
+    badge),
+  ...body);
+}
+
+function renderFleet() {
+  const pane = $('pane');
+  if (!pane || S.sel || S.page !== 'fleet') return;
+  if (!S.servers.length) {
+    pane.replaceChildren(el('div', { class: 'state' }, el('div', { class: 'big-ico' }, icon('server')),
+      el('h2', { text: 'No servers yet' }), el('div', { text: 'Add one with `sshm add` in your terminal, then reload this page.' })));
+    return;
+  }
+  const list = visibleServers();
+  const rows = list.map((s) => ({ s, st: fleetState(s) }));
+  if (S.fleetSort === 'attention') {
+    const rank = { crit: 0, warn: 1, ok: 2 };
+    rows.sort((a, b) => rank[a.st.lvl] - rank[b.st.lvl] || b.st.issues.length - a.st.issues.length);
+  }
+  const up = list.filter((s) => S.ping[s.name] && S.ping[s.name].up).length;
+  const down = list.filter((s) => S.ping[s.name] && !S.ping[s.name].up).length;
+  const attention = rows.filter((r) => r.st.lvl !== 'ok').length;
+  const chips = $('chips');
+  if (chips) {
+    const sortBtn = (key, label) => el('button', { class: S.fleetSort === key ? 'on' : '', text: label,
+      onclick: () => { S.fleetSort = key; store.set('fleetSort', key); renderFleet(); } });
+    chips.replaceChildren(
+      el('span', { class: 'chip' }, el('span', { class: 'live' + (up ? '' : ' stale') }), el('b', { text: String(up) }), ` of ${list.length} up`),
+      down ? el('span', { class: 'chip' }, el('b', { text: String(down), style: 'color:var(--crit)' }), ' down') : null,
+      el('span', { class: 'chip', title: 'High CPU, memory, disk or load, or no stats' },
+        el('b', { text: String(attention), style: attention ? 'color:var(--warn)' : '' }), ' need attention'),
+      el('div', { class: 'seg' }, sortBtn('order', 'Vault order'), sortBtn('attention', 'Problems first')));
+  }
+  const scroll = pane.scrollTop;
+  const focused = document.activeElement && document.activeElement.closest && document.activeElement.closest('.fcard');
+  const focusIdx = focused ? [...pane.querySelectorAll('.fcard')].indexOf(focused) : -1;
+  pane.replaceChildren(
+    list.length ? el('div', { class: 'fleet' }, rows.map((r) => fleetCard(r.s, r.st)))
+      : el('div', { class: 'state', text: 'No server matches the search.' }),
+    el('div', { class: 'foot-hint', text: list.length < S.servers.length
+      ? `Showing ${list.length} of ${S.servers.length} servers that match the search.`
+      : 'Stats refresh every few seconds. Type in the search box to narrow the list, e.g. a tag.' }));
+  pane.scrollTop = scroll;
+  if (focusIdx >= 0) { const c = pane.querySelectorAll('.fcard')[focusIdx]; if (c) c.focus({ preventScroll: true }); }
+}
+
+// ----------------------------------------------------------- run on many ---
+let runFrame = 0;
+function scheduleRuns() {
+  if (runFrame) return;
+  runFrame = requestAnimationFrame(() => { runFrame = 0; renderRuns(); });
+}
+
+const pickedServers = () => S.multiSel.filter((n) => S.servers.some((s) => s.name === n));
+function setPicked(names) {
+  S.multiSel = S.servers.map((s) => s.name).filter((n) => names.includes(n)); // keep vault order
+  store.set('multiSel', S.multiSel);
+  renderPicker();
+  renderNav();
+}
+
+function renderMulti() {
+  const pane = $('pane');
+  if (!pane) return;
+  let hi = S.termHist.length;
+  const inp = el('input', { id: 'multiIn', placeholder: 'Command to run on every picked server', spellcheck: 'false', autocomplete: 'off' });
+  inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && inp.value.trim()) { runMulti(inp.value); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (hi > 0) inp.value = S.termHist[--hi]; }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); if (hi < S.termHist.length) { hi++; inp.value = S.termHist[hi] || ''; } }
+  });
+  pane.replaceChildren(el('div', { class: 'multi' },
+    el('section', { class: 'card', id: 'mpick' }),
+    el('div', { class: 'prompt' }, el('span', { class: 'ps', id: 'mps' }), inp,
+      el('button', { class: 'btn primary', id: 'mrun', onclick: () => inp.value.trim() && runMulti(inp.value) }, icon('play'), 'Run')),
+    el('div', { class: 'quick' }, QUICK.map((c) => el('button', { text: c, onclick: () => runMulti(c) }))),
+    el('div', { id: 'runs' })));
+  renderPicker();
+  renderRuns();
+  inp.focus();
+}
+
+function renderPicker() {
+  const box = $('mpick');
+  if (!box) return;
+  const picked = new Set(pickedServers());
+  const tags = [...new Set(S.servers.flatMap((s) => s.tags))].sort();
+  const toggleSet = (names) => {
+    const all = names.length && names.every((n) => picked.has(n));
+    setPicked(all ? [...picked].filter((n) => !names.includes(n)) : [...picked, ...names]);
+  };
+  const allNames = S.servers.map((s) => s.name);
+  box.replaceChildren(
+    el('h3', {}, icon('server'), 'Servers', el('span', { class: 'r', text: `${picked.size} of ${S.servers.length} picked` })),
+    el('div', { class: 'picks' },
+      el('button', { class: 'pick tagp' + (picked.size === allNames.length && allNames.length ? ' on' : ''), onclick: () => toggleSet(allNames) }, 'All'),
+      el('button', { class: 'pick tagp', onclick: () => setPicked([]), disabled: !picked.size }, 'None'),
+      tags.map((t) => {
+        const names = S.servers.filter((s) => s.tags.includes(t)).map((s) => s.name);
+        const on = names.every((n) => picked.has(n));
+        return el('button', { class: 'pick tagp' + (on ? ' on' : ''), title: `Pick every server tagged ${t}`, onclick: () => toggleSet(names) },
+          '#' + t, el('span', { class: 'k', text: String(names.length) }));
+      })),
+    el('div', { class: 'picks' }, S.servers.length ? S.servers.map((s) => {
+      const p = S.ping[s.name];
+      return el('button', { class: 'pick' + (picked.has(s.name) ? ' on' : ''), title: s.label,
+        onclick: () => setPicked(picked.has(s.name) ? [...picked].filter((n) => n !== s.name) : [...picked, s.name]) },
+      el('span', { class: 'dot ' + (p ? (p.up ? 'up' : 'down') : '') }), s.name);
+    }) : el('span', { class: 'faint', text: 'No servers yet. Add one with `sshm add`.' })));
+  const n = picked.size;
+  if ($('mps')) $('mps').textContent = n ? `${n} server${n === 1 ? '' : 's'} $` : 'pick servers above';
+  if ($('mrun')) {
+    $('mrun').disabled = !n;
+    $('mrun').replaceChildren(icon('play'), n > 1 ? `Run on ${n}` : 'Run');
+  }
+}
+
+async function runMulti(cmd, names) {
+  cmd = cmd.trim();
+  names = names || pickedServers();
+  if (!cmd) return;
+  if (!names.length) { toast('Pick at least one server first.', 'err'); return; }
+  if (S.termHist[S.termHist.length - 1] !== cmd) { S.termHist.push(cmd); S.termHist = S.termHist.slice(-200); store.set('termHist', S.termHist); }
+  const inp = $('multiIn');
+  if (inp) inp.value = '';
+  const run = { cmd, names: [...names], res: {}, start: Date.now(), end: 0, view: S.multiView };
+  S.runs.unshift(run);
+  if (S.runs.length > 20) S.runs.pop();
+  renderRuns();
+  const queue = [...names];
+  const worker = async () => {
+    while (queue.length) {
+      const name = queue.shift();
+      const t0 = Date.now();
+      try {
+        const r = await post('/api/exec', { s: name, path: '', cmd });
+        run.res[name] = { out: r.output, code: r.code, ms: r.ms };
+      } catch (e) {
+        run.res[name] = { err: e.message, code: -1, ms: Date.now() - t0 };
+      }
+      scheduleRuns();
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(6, names.length) }, worker));
+  run.end = Date.now();
+  scheduleRuns();
+}
+
+const resKey = (r) => `${r.code}\u0000${r.err || ''}\u0000${r.out || ''}`;
+
+// groupRun puts servers that answered exactly alike together, biggest first.
+function groupRun(run) {
+  const groups = [];
+  const byKey = new Map();
+  for (const n of run.names) {
+    const r = run.res[n];
+    if (!r) continue;
+    const k = resKey(r);
+    if (!byKey.has(k)) { byKey.set(k, { names: [], r }); groups.push(byKey.get(k)); }
+    byKey.get(k).names.push(n);
+  }
+  return groups.sort((a, b) => b.names.length - a.names.length);
+}
+
+// outputPre shows output, marking the lines that the most common answer lacks.
+function outputPre(text, common) {
+  const pre = el('pre');
+  if (!text) { pre.append(el('span', { class: 'empty', text: '(no output)' })); return pre; }
+  if (!common || text.length > 200000) { pre.textContent = text; return pre; }
+  const lines = text.replace(/\n$/, '').split('\n');
+  pre.append(...lines.map((ln) => el('span', { class: common.has(ln) ? 'l' : 'l d', text: ln })));
+  return pre;
+}
+
+function statusBadge(r) {
+  if (r.err) return el('span', { class: 'badge crit', text: 'failed to run' });
+  return el('span', { class: 'badge ' + (r.code ? 'crit' : 'ok'), text: `exit ${r.code}` });
+}
+
+function renderRun(run) {
+  const done = run.names.filter((n) => run.res[n]).length;
+  const total = run.names.length;
+  const results = run.names.map((n) => run.res[n]).filter(Boolean);
+  const failed = results.filter((r) => r.err || r.code).length;
+  const groups = groupRun(run);
+  // The answer most servers gave, when there is one: other answers are
+  // compared against it line by line.
+  const major = groups.length > 1 && groups[0].names.length > groups[1].names.length ? groups[0] : null;
+  const commonLines = major && !major.r.err ? new Set((major.r.out || '').replace(/\n$/, '').split('\n')) : null;
+  const viewBtn = (v, label) => el('button', { class: run.view === v ? 'on' : '', text: label,
+    onclick: () => { run.view = v; S.multiView = v; store.set('multiView', v); renderRuns(); } });
+
+  const head = el('div', { class: 'run-head' },
+    el('span', { class: 'c', text: '$ ' + run.cmd }),
+    done < total ? el('span', { class: 'badge muted', text: `${done} of ${total} done…` })
+      : el('span', { class: 'faint', text: `${total} server${total === 1 ? '' : 's'} · ${((run.end - run.start) / 1000).toFixed(1)} s` }),
+    done && groups.length === 1 && done === total && total > 1 ? el('span', { class: 'badge ok', text: 'all the same' }) : null,
+    groups.length > 1 ? el('span', { class: 'badge warn', text: `${groups.length} different answers` }) : null,
+    failed ? el('span', { class: 'badge crit', text: `${failed} failed` }) : null,
+    total > 1 ? el('div', { class: 'seg' }, viewBtn('group', 'Grouped'), viewBtn('each', 'Each server')) : null,
+    el('button', { class: 'btn ghost', title: 'Run the same command on the same servers again', disabled: done < total,
+      onclick: () => runMulti(run.cmd, run.names) }, icon('refresh'), 'Again'),
+    el('button', { class: 'btn ghost icon', title: 'Remove', onclick: () => { S.runs = S.runs.filter((r) => r !== run); renderRuns(); } }, icon('x')));
+
+  const block = (names, r, label) => {
+    const differs = major && groups.length > 1 && resKey(r) !== resKey(major.r);
+    return el('div', { class: 'rblock' + (r.err || r.code ? ' failed' : differs ? ' differs' : '') },
+      el('header', {},
+        el('div', { class: 'who' }, names.map((n) => el('span', { class: 'sname', text: n }))),
+        el('span', { class: 'r' },
+          label ? el('span', { text: label }) : null,
+          names.length === 1 && r.ms != null ? el('span', { text: `${r.ms} ms` }) : null,
+          statusBadge(r))),
+      outputPre(r.err || r.out, differs && !r.err ? commonLines : null));
+  };
+
+  const body = [];
+  if (run.view === 'each' || total === 1) {
+    for (const n of run.names) if (run.res[n]) body.push(block([n], run.res[n]));
+  } else {
+    for (const g of groups) {
+      const label = groups.length === 1 ? (g.names.length > 1 ? `all ${g.names.length}` : '')
+        : g === major ? `most common · ${g.names.length}` : `${g.names.length} server${g.names.length === 1 ? '' : 's'}`;
+      body.push(block(g.names, g.r, label));
+    }
+  }
+  const waiting = run.names.filter((n) => !run.res[n]);
+  if (waiting.length) body.push(el('div', { class: 'waiting', text: 'Waiting for ' + waiting.join(', ') + '…' }));
+  return el('div', { class: 'run' }, head, ...body);
+}
+
+function renderRuns() {
+  const box = $('runs');
+  if (!box) return;
+  if (!S.runs.length) {
+    box.replaceChildren(el('div', { class: 'faint', style: 'text-align:center;padding:30px 10px' },
+      'Pick servers above, then run a command. Answers that match are grouped, and lines that differ from the most common answer are highlighted.'));
+    return;
+  }
+  box.replaceChildren(...S.runs.map(renderRun));
 }
 
 // ----------------------------------------------------------------- files ---
@@ -1059,6 +1541,7 @@ function renderFiles() {
       el('button', { class: 'btn primary', onclick: () => fileInput.click() }, icon('upload'), 'Upload'),
       el('button', { class: 'btn', onclick: newFolder }, icon('folderPlus'), 'New folder'),
       el('button', { class: 'btn', onclick: newFile }, icon('filePlus'), 'New file'),
+      el('button', { class: 'btn', title: 'Open a terminal in this folder', onclick: () => openTerminal(path) }, icon('terminal'), 'Terminal here'),
       el('span', { style: 'flex:1' }),
       filterInp, fileInput),
     wrap,
@@ -1198,6 +1681,8 @@ async function openEditor(full, initial) {
       ta.setRangeText('\t', a, b, 'end'); sync();
     }
   });
+  // Focusing a textarea leaves the caret, and the view, at the end: start at the top.
+  setTimeout(() => { ta.setSelectionRange(0, 0); ta.scrollTop = 0; updPos(); }, 0);
   await modal((close) => {
     closeFn = close;
     return el('div', { class: 'modal editor' },
@@ -1208,6 +1693,158 @@ async function openEditor(full, initial) {
       el('footer', {}, pos, el('span', { text: `${content.split('\n').length} lines` }),
         el('span', { style: 'margin-left:auto', text: initial != null ? 'new file — saved on first Save' : '' })));
   }, tryClose);
+}
+
+// -------------------------------------------------------------- terminal ---
+// A login shell on the server, in xterm.js. The emulator is only loaded the
+// first time a terminal is opened. Sessions live on while you look at other
+// tabs or servers, until the shell exits or the page is closed.
+let xtermLoading = null;
+function loadXterm() {
+  if (xtermLoading) return xtermLoading;
+  const v = encodeURIComponent(S.version || '0');
+  const script = (src) => new Promise((resolve, reject) => {
+    const n = document.createElement('script');
+    n.src = src;
+    n.onload = resolve;
+    n.onerror = () => reject(new Error('could not load ' + src));
+    document.head.append(n);
+  });
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = '/static/xterm.css?v=' + v;
+  document.head.append(css);
+  xtermLoading = script('/static/xterm.js?v=' + v)
+    .then(() => script('/static/addon-fit.js?v=' + v))
+    .catch((e) => { xtermLoading = null; throw e; });
+  return xtermLoading;
+}
+
+const TERM_THEME = {
+  background: '#0b0e13', foreground: '#d6dde8', cursor: '#8ab4ff', cursorAccent: '#0b0e13',
+  selectionBackground: 'rgba(91, 155, 255, .35)',
+};
+const termEnc = new TextEncoder();
+// Text from a server or the vault never reaches the terminal with control codes in it.
+const plain = (t) => String(t).replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ');
+const termOpen = (name) => { const t = S.terms[name]; return !!t && (t.state === 'open' || t.state === 'connecting'); };
+
+function newTermSession(name) {
+  const term = new Terminal({
+    cursorBlink: true, fontSize: 13, scrollback: 5000, theme: TERM_THEME,
+    fontFamily: getComputedStyle(document.documentElement).getPropertyValue('--mono').trim() || 'monospace',
+  });
+  const fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  const sess = { name, term, fit, box: el('div', { class: 'tbox' }), ws: null, state: 'idle', live: false, opened: false,
+    path: S.termPath[name] || '' };
+  delete S.termPath[name];
+  const send = (data) => { if (sess.ws && sess.ws.readyState === 1) sess.ws.send(data); };
+  term.onData((d) => {
+    if (sess.state === 'closed') { if (d === '\r') connectTerm(sess); return; }
+    send(termEnc.encode(d));
+  });
+  term.onBinary((d) => send(Uint8Array.from(d, (c) => c.charCodeAt(0))));
+  term.onResize(({ cols, rows }) => send(JSON.stringify({ t: 'resize', cols, rows })));
+  S.terms[name] = sess;
+  return sess;
+}
+
+function connectTerm(sess) {
+  if (sess.ws) { const old = sess.ws; sess.ws = null; old.close(); }
+  const s = S.servers.find((x) => x.name === sess.name);
+  sess.state = 'connecting';
+  sess.live = false;
+  termStatus();
+  sess.term.write(`\x1b[2m[sshm] connecting to ${plain(s ? s.label : sess.name)}${sess.path ? ' in ' + plain(sess.path) : ''}…\x1b[0m\r\n`);
+  const q = { s: sess.name, cols: sess.term.cols, rows: sess.term.rows };
+  if (sess.path) q.path = sess.path;
+  const ws = new WebSocket(`ws://${location.host}/api/term?${qs(q)}`);
+  ws.binaryType = 'arraybuffer';
+  sess.ws = ws;
+  const end = (msg) => {
+    if (sess.ws !== ws) return;
+    sess.term.write(msg);
+    sess.state = 'closed';
+    sess.live = false;
+    sess.ws = null;
+    ws.close();
+    termStatus();
+    renderSidebar();
+  };
+  ws.onopen = () => { if (sess.ws === ws) { sess.state = 'open'; renderSidebar(); } };
+  ws.onmessage = (e) => {
+    if (sess.ws !== ws) return;
+    if (typeof e.data === 'string') {
+      let m = {};
+      try { m = JSON.parse(e.data); } catch {}
+      if (m.t === 'error') end(`\r\n\x1b[31m[sshm] ${plain(m.msg)}\x1b[0m\r\n\x1b[2m[sshm] press Enter to try again\x1b[0m\r\n`);
+      else if (m.t === 'exit') end(`\r\n\x1b[2m[sshm] session ended (exit ${Number(m.code)}). Press Enter to start a new one.\x1b[0m\r\n`);
+      return;
+    }
+    if (!sess.live) { sess.live = true; termStatus(); }
+    sess.term.write(new Uint8Array(e.data));
+  };
+  ws.onclose = () => end('\r\n\x1b[2m[sshm] connection closed. Press Enter to reconnect.\x1b[0m\r\n');
+}
+
+function termStatus() {
+  const chip = $('termState');
+  if (!chip) return;
+  const sess = S.terms[S.sel];
+  const [cls, text] = !sess || sess.state === 'idle' ? [' stale', 'starting…']
+    : sess.state === 'closed' ? [' err', 'closed'] : sess.live ? ['', 'connected'] : [' stale', 'connecting…'];
+  chip.replaceChildren(el('span', { class: 'live' + cls }), text);
+}
+
+// openTerminal starts a fresh shell in path, after asking if one is running.
+async function openTerminal(path) {
+  const name = S.sel;
+  const sess = S.terms[name];
+  if (termOpen(name) && !(await confirmBox('Start a new terminal?',
+    `The shell running on ${name} will be closed${path ? ' and a new one started in ' + path : ''}.`, 'Start new'))) return;
+  if (sess) {
+    if (sess.ws) { const old = sess.ws; sess.ws = null; old.close(); }
+    sess.state = 'idle';
+    sess.path = path || '';
+    sess.term.reset();
+  } else {
+    S.termPath[name] = path || '';
+  }
+  if (S.tab === 'terminal') renderMain(); else setTab('terminal');
+}
+
+let termObserver = null;
+async function renderTerminal() {
+  const pane = $('pane');
+  if (!pane) return;
+  const name = S.sel, s = server();
+  const host = el('div', { class: 'xhost' });
+  pane.replaceChildren(el('div', { class: 'tpane' },
+    el('div', { class: 'toolbar' },
+      el('span', { class: 'chip', id: 'termState' }),
+      el('span', { class: 'faint', text: `Your login shell on ${s.name}, through the connection the dashboard already has open.` }),
+      el('span', { style: 'flex:1' }),
+      el('button', { class: 'btn', title: 'Close this shell and start a new one', onclick: () => openTerminal('') }, icon('refresh'), 'New session')),
+    host));
+  termStatus();
+  try {
+    await loadXterm();
+  } catch (e) {
+    host.replaceChildren(errorBox('Cannot load the terminal', e.message, s));
+    return;
+  }
+  if (S.sel !== name || S.tab !== 'terminal' || !host.isConnected) return;
+  const sess = S.terms[name] || newTermSession(name);
+  host.append(sess.box);
+  if (!sess.opened) { sess.term.open(sess.box); sess.opened = true; }
+  try { sess.fit.fit(); } catch {}
+  if (sess.state === 'idle') connectTerm(sess);
+  termStatus();
+  if (termObserver) termObserver.disconnect();
+  termObserver = new ResizeObserver(() => { if (host.isConnected) { try { sess.fit.fit(); } catch {} } });
+  termObserver.observe(host);
+  sess.term.focus();
 }
 
 // --------------------------------------------------------------- console ---
@@ -1223,7 +1860,7 @@ function renderConsole() {
   const term = el('div', { class: 'term', id: 'term' });
   if (!log.length) {
     term.append(el('div', { class: 'hint', text: `Run a command on ${s.name}. Each one runs on its own, starting in the folder shown in the prompt; "cd" carries over.` }),
-      el('div', { class: 'hint', text: 'Interactive programs (vim, top without -b, sudo prompts) need a real terminal — use `sshm ssh ' + s.name + '`.' }));
+      el('div', { class: 'hint', text: 'Interactive programs (vim, top, sudo prompts) need a real terminal: use the Terminal tab.' }));
   }
   for (const r of log) {
     term.append(el('div', { class: 'cmd' }, el('span', { class: 'p', text: (r.cwd || '~') + ' $ ' }), r.cmd));
@@ -1278,7 +1915,8 @@ document.addEventListener('keydown', (e) => {
   if (document.querySelector('.veil')) return;
   if (e.key === '/' && !typing) { e.preventDefault(); $('q').focus(); $('q').select(); return; }
   if (typing || !S.sel) return;
-  if (e.altKey && ['1', '2', '3'].includes(e.key)) { setTab(['overview', 'files', 'console'][+e.key - 1]); return; }
+  // e.code, because on a Mac Option+1 types "¡".
+  if (e.altKey && /^Digit[1-4]$/.test(e.code)) { e.preventDefault(); setTab(TABS[+e.code.slice(5) - 1][0]); return; }
   if (S.tab !== 'files' || !S.files) return;
   const list = shownEntries();
   let i = list.findIndex((x) => x.name === S.fileSel);
@@ -1302,6 +1940,7 @@ setInterval(renderChips, 5000);
   renderMain();
   const last = store.get('sel', null);
   if (last && S.servers.some((s) => s.name === last)) select(last);
+  else startPolling();
   pingAll();
 })();
 </script>
